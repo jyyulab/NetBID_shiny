@@ -1,0 +1,20 @@
+Package: NetBIDshiny
+Type: Package
+Title: A shiny app to visualize the NetBID results
+Version: 0.1.0
+Authors@R: person('Xinran', 'Dong', email = 'xinran.dong@stjude.org', role = c('aut', 'cre'))
+Maintainer@R: person('Xinran', 'Dong', email = 'xinran.dong@stjude.org')
+Description: A shiny app for NetBID2 (data-driven context-specific network and Bayesian inference, version II) visualization functions.
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 3.4.0),
+    NetBID2 (>= 0.1.1),
+    shiny (>= 1.2.0),
+    shinyjs (>= 1.0),
+    shinythemes (>= 1.1.2),
+    DT (>= 0.5)
+Imports:
+Suggests:
+RoxygenNote: 6.1.1

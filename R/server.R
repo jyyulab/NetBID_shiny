@@ -1,6 +1,5 @@
 
 options(shiny.maxRequestSize = 500 * 1024 ^ 2) ## 500mb
-library(DT)
 library(shinyjs)
 library(NetBID2)
 
@@ -8,7 +7,7 @@ server <- function(input, output) {
   ################
   use_data <- reactiveValues(ori_ms_tab=NULL,ms_tab=NULL,tmp_ms_tab=NULL,use_para='',basic_info='',
                              project.name=NULL,main.dir=NULL,
-                             cal.eset=NULL,merge.ac.eset=NULL,merge.network=NULL,DE=NULL,
+                             cal.eset=NULL,merge.ac.eset=NULL,merge.network=NULL,DE=NULL,DA=NULL,
                              transfer_tab=NULL, all_gs2gene=NULL, all_gs2gene_info=NULL,
                              all_comp=NULL,choose_comp=NULL,plot_height=500,plot_width=800) ## global variables
   control_para <- reactiveValues(doloadData = FALSE, doplot=FALSE) ## control parameters
@@ -31,6 +30,8 @@ server <- function(input, output) {
   observeEvent(input$doGSEAPlot, {control_para$doplot <- 'doGSEAPlot'}) #5
   observeEvent(input$doFunctionEnrichPlot, {control_para$doplot <- 'doFunctionEnrichPlot'}) #6
   observeEvent(input$doBubblePlot, {control_para$doplot <- 'doBubblePlot'}) #7
+  observeEvent(input$doNetBIDPlot, {control_para$doplot <- 'doNetBIDPlot'}) #8
+  
 
   ################
   # functions
@@ -87,6 +88,7 @@ server <- function(input, output) {
     use_data$cal.eset <- analysis.par$cal.eset
     use_data$merge.ac.eset <- analysis.par$merge.ac.eset
     use_data$merge.network <- analysis.par$merge.network$target_list
+    use_data$DA <- analysis.par$DA
     use_data$DE <- analysis.par$DE
     all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
     all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
@@ -301,12 +303,15 @@ server <- function(input, output) {
     all_driver <- ms_tab$originalID_label ## unique!!!
     tagList(
       fluidRow(
-               column(2,offset=0,selectInput(inputId='choose_driver4',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
-               column(2,offset=0,selectInput(inputId='label_col4',label='choose column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
-               column(2,offset=0,checkboxInput(inputId='use_gene_symbol4',label='Display gene symbol',value = FALSE)),
-               column(2,offset=0,checkboxInput(inputId='use_protein_coding4',label='Only Display protein coding genes/transcripts',value = FALSE)),
-               column(2,offset=0,selectInput(inputId='choose_driver4_2',label='choose the second driver to plot (optinal)',choices=all_driver,selected = all_driver[1])),
-               column(2,offset=0,actionButton(inputId='doTargetNetPlot',label='Draw TargetNet Plot'))
+               column(4,offset=0,selectInput(inputId='choose_driver4',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
+               column(4,offset=0,selectInput(inputId='label_col4',label='choose column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
+               column(4,offset=0,selectInput(inputId='choose_driver4_2',label='choose the second driver to plot (optinal)',choices=all_driver,selected = all_driver[1]))
+      ),
+      fluidRow(
+               column(3,offset=0,checkboxInput(inputId='use_gene_symbol4',label='Display gene symbol',value = FALSE)),
+               column(3,offset=0,checkboxInput(inputId='use_protein_coding4',label='Only Display protein coding genes/transcripts',value = FALSE)),
+               column(3,offset=0,checkboxInput(inputId='alphabetical_order',label='alphabetical_order',value = FALSE)),
+               column(3,offset=0,actionButton(inputId='doTargetNetPlot',label='Draw TargetNet Plot'))
       ),
       p('NOTE: Only accepet originalID_label for its uniqueness, please search the the box in the left to get the label !')
     )
@@ -421,6 +426,28 @@ server <- function(input, output) {
       p("NOTE: bubble plot will generate large size figures, please choose small top driver number !")
     )
   })
+  # 8
+  output$NetBIDPlot_para <- renderUI({
+    if(control_para$doloadData==FALSE) return()
+    ms_tab <- use_data$ms_tab
+    all_comp <- use_data$all_comp
+    all_comp <- unique(gsub('(.*)_DA','\\1',all_comp))
+    all_comp <- unique(gsub('(.*)_DE','\\1',all_comp))
+    choose_comp <- use_data$choose_comp
+    choose_comp <- unique(gsub('(.*)_DA','\\1',choose_comp))
+    tagList(
+      fluidRow(column(6,offset=0,checkboxGroupInput(inputId='DA_list',label='choose DA comparisons to display',choices=all_comp,selected =choose_comp)),
+               column(6,offset=0,checkboxGroupInput(inputId='DE_list',label='choose DE comparisons to display',choices=all_comp,selected =choose_comp))
+      ),
+      fluidRow(
+#               column(3,offset=0,selectInput(inputId='main_id',label='main comparison to visualize',choices=all_comp,selected=choose_comp)),
+               column(3,offset=0,numericInput(inputId='top_number8',label='number of top drivers',value=30,step=1,min=0,max=Inf)),
+               column(3,offset=0,selectInput(inputId='DA_display_col',label='columns for DA display',choices=c("P.Value",'logFC'),selected='P.Value')),
+               column(3,offset=0,selectInput(inputId='DE_display_col',label='columns for DE display',choices=c("P.Value",'logFC'),selected='logFC')),
+               column(3,offset=0,actionButton(inputId='doNetBIDPlot',label='Draw NetBID-Plot'))
+      )
+    )
+  })
   ################
   # main plot # plotOutput('mainPlot',height=input$plot_height)
   output$plotPara <- renderUI({
@@ -457,8 +484,9 @@ server <- function(input, output) {
                column(6,offset=0,sliderInput('plot_height4','plot_height(px)',min=100,max=2000,value=900))
              ),
              fluidRow(
-               column(6,offset=0,sliderInput('source_cex','driver cex',min=0.1,max=3,value=1)),
-               column(6,offset=0,sliderInput('label_cex','target cex',min=0.1,max=3,value=1))
+               column(4,offset=0,sliderInput('source_cex','driver cex',min=0.1,max=3,value=1)),
+               column(4,offset=0,sliderInput('label_cex','target cex',min=0.1,max=3,value=1)),
+               column(4,offset=0,sliderInput('n_layer','number of layer',min=1,max=10,value=1,step=1))
              )
            ),
            'doGSEAPlot'=tagList(
@@ -486,6 +514,17 @@ server <- function(input, output) {
              fluidRow(
                column(6,offset=0,sliderInput('gs_cex7','gene set cex',min=0.1,max=3,value=0.7)),
                column(6,offset=0,sliderInput('driver_cex7','driver cex',min=0.1,max=3,value=0.8))
+             )
+           ),
+           'doNetBIDPlot'=tagList(
+             fluidRow(
+               column(6,offset=0,sliderInput('plot_width8','plot_width(px)',min=100,max=2000,value=600)),
+               column(6,offset=0,sliderInput('plot_height8','plot_height(px)',min=100,max=2000,value=600))
+             ),
+             fluidRow(
+               column(4,offset=0,sliderInput('row_cex','row names cex',min=0.1,max=3,value=1)),
+               column(4,offset=0,sliderInput('column_cex','column names cex',min=0.1,max=3,value=1)),
+               column(4,offset=0,sliderInput('text_cex','text cex',min=0.1,max=3,value=1))
              )
            )
     )
@@ -578,7 +617,7 @@ server <- function(input, output) {
         draw.targetNet.TWO(source1_label = ms_tab[use_driver,input$label_col4],source2_label = ms_tab[use_driver2,input$label_col4],
                            source1_z=ms_tab[use_driver,z_col],source2_z=ms_tab[use_driver2,z_col],
                            edge_score1=edge_score,edge_score2=edge_score2,
-                           label_cex=input$label_cex,source_cex=input$source_cex)
+                           label_cex=input$label_cex,source_cex=input$source_cex,n_layer=input$n_layer,alphabetical_order=input$alphabetical_order)
       }else{
         print(str(edge_score))
         #print(ms_tab[use_driver,input$label_col4])
@@ -586,7 +625,7 @@ server <- function(input, output) {
         #print(input$label_cex)
         #print(input$source_cex)
         draw.targetNet(source_label = ms_tab[use_driver,input$label_col4],source_z=ms_tab[use_driver,z_col],edge_score=edge_score,
-                       label_cex=input$label_cex,source_cex=input$source_cex)
+                       label_cex=input$label_cex,source_cex=input$source_cex,n_layer=input$n_layer,alphabetical_order=input$alphabetical_order)
       }
     }
   #
@@ -648,6 +687,22 @@ server <- function(input, output) {
                       mark_gene = NULL, driver_cex = input$driver_cex7, gs_cex = input$gs_cex7)
     }
   #
+    if(control_para$doplot=='doNetBIDPlot'){ # 8
+      if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
+      use_data$plot_height <- as.numeric(input$plot_height8)
+      use_data$plot_width <- as.numeric(input$plot_width8)
+      DA <- use_data$DA; DE <- use_data$DE;
+      DA_list <- input$DA_list;
+      DE_list <- input$DE_list;
+      choose_comp <- use_data$choose_comp
+      choose_comp <- unique(gsub('(.*)_DA','\\1',choose_comp))
+      print(str(DA[DA_list])); print(str(DE[DE_list])); print(input$choose_comp)
+      res1 <- draw.NetBID(DA_list = DA[DA_list], DE_list = DE[DE_list], main_id = choose_comp,
+                          top_number = input$top_number8, DA_display_col = input$DA_display_col,
+                          DE_display_col = input$DE_display_col, z_col = "Z-statistics", digit_num = 2,
+                          row_cex = input$row_cex, column_cex = input$column_cex, text_cex = input$text_cex, col_srt = 60)
+    }
+    #
   },height = use_data$plot_height,width=use_data$plot_width)))})
   ########################
   # addtionalPerformance
