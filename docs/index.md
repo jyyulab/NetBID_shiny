@@ -1,81 +1,87 @@
 ---
 layout: default
-title: Home
+title: NetBIDshiny
 nav_order: 1
+description: "NetBIDshiny"
 permalink: /
 ---
 
-
-# Focus on writing good documentation
+      
+# A shiny app for NetBID2 result analyze and visualization.
 {: .fs-9 }
 
-Just the Docs gives your documentation a jumpstart with a responsive Jekyll theme that is easily customizable and hosted on GitHub pages.
+This is the documentation for the usage of NetBIDshiny.
 {: .fs-6 .fw-300 }
 
-[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/pmarsceill/just-the-docs){: .btn .fs-5 }
+[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/jyyulab/NetBID_shiny){: .btn .fs-5 }
+
+---
+
+## Overview
+
+NetBIDshiny is a shiny app for NetBID2 (data-driven context-specific network and Bayesian inference, version II) visualization functions.
+
+Current newest version of NetBID is NetBID2, which could be found at [NetBID2](https://github.com/jyyulab/NetBID-dev) with online tutorial found at [NetBID2 tutorial](https://jyyulab.github.io/NetBID-dev/).
 
 ---
 
 ## Getting started
+
 ### Dependencies
-Just the Docs is built for [Jekyll](https://jekyllrb.com), a static site generator. View the [quick start guide](https://jekyllrb.com/docs/quickstart/) for more information. Just the Docs requires no special Jekyll plugins and can run on GitHub Pages standard Jekyll compiler.
 
-### Quick start: Use as a GitHub Pages remote theme
-1. Add Just the Docs to your Jekyll site's `_config.yml` as a [remote theme](https://blog.github.com/2017-11-29-use-any-theme-with-github-pages/)
-```yaml
-remote_theme: pmarsceill/just-the-docs
-```
-<small>You must have GitHub pages enabled on your repo, one or more markdown files, and a `_config.yml` file. [See an example repository](https://github.com/pmarsceill/jtd-remote)</small>
+R, version >= 3.4.0
 
-### Local installation: Use the gem-based theme
-1. Install the Ruby Gem
-```bash
-$ gem install just-the-docs
-```
-```yaml
-# .. or add it to your your Jekyll site’s Gemfile
-gem "just-the-docs"
-```
-2. Add Just the Docs to your Jekyll site’s `_config.yml`
-```yaml
-theme: "just-the-docs"
-```
-3. _Optional:_ Initialize search data (creates `search-data.json`)
-```bash
-$ bundle exec just-the-docs rake search:init
-```
-3. Run you local Jekyll server
-```bash
-$ jekyll serve
-```
-```bash
-# .. or if you're using a Gemfile (bundler)
-$ bundle exec jekyll serve
-```
-4. Point your web browser to [http://localhost:4000](http://localhost:4000)
+NetBID2, version >= 0.1.1
 
-### Configure Just the Docs
-- [See configuration options]({{ site.baseurl }}{% link docs/configuration.md %})
+### Quick start: install R packages (NetBIDshiny)
 
+- install the R packages from github (not published yet)
+
+```R
+library(devtools)
+install_github("jyyulab/NetBID_shiny",ref='master')
+```
+
+- OR, download the released source package from [NetBIDshiny_0.1.0.tar.gz](https://github.com/jyyulab/NetBID_shiny/releases/download/0.1.0/NetBIDshiny_0.1.0.tar.gz) and local install
+
+```R
+install.packages('NetBIDshiny_0.1.0.tar.gz',repos=NULL)
+```
+
+### Usage of NetBIDShiny
+
+There is only one function in the package, directly call it and a local web server will be ready for use. 
+
+```R
+library(NetBIDshiny)
+run_NetBID_shiny()
+```
+
+Then open a browser and enter local url address (e.g: http://127.0.0.1:XXXX).
+
+
+### Online demo server
+
+The online public version of NetBIDshiny could be found at [XXX](XXX). User could choose to use it without local install. 
+
+---
+
+## Design manual
+
+The manual for all functions in NetBID2 could be obtained from [NetBIDshiny_0.1.0.pdf](https://github.com/jyyulab/NetBID_shiny/blob/master/NetBIDshiny_0.1.0.pdf).
+
+## Tutorial
+ 
+We choose the same demo dataset as NetBID2 from GEO database: [GSE116028](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028). 
+
+Check [Tutorial page](docs/tutorial) for detail.
 
 ---
 
 ## About the project
 
-Just the Docs is &copy; 2017 by [Patrick Marsceill](http://patrickmarsceill.com).
+For the detailed description of NetBID algorithm, please refer our lab page [View Yu Lab@St. Jude](https://stjuderesearch.org/site/lab/yu).
 
 ### License
 
-Just the Docs is distributed by an [MIT license](https://github.com/pmarsceill/just-the-docs/tree/master/LICENSE.txt).
-
-### Contributing
-
-When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change. Read more about becoming a contributor in [our GitHub repo](https://github.com/pmarsceill/just-the-docs#contributing).
-
-
-### Code of Conduct
-
-Just the Docs is committed to fostering a welcoming community.
-
-[View our Code of Conduct](https://github.com/pmarsceill/just-the-docs/tree/master/CODE_OF_CONDUCT.md) on our GitHub repository.
+Distributed by an MIT license.

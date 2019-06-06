@@ -12,8 +12,8 @@ server <- function(input, output) {
                              all_comp=NULL,choose_comp=NULL,plot_height=500,plot_width=800) ## global variables
   control_para <- reactiveValues(doloadData = FALSE, doplot=FALSE) ## control parameters
   ################
-  observeEvent(input$loadButton, { control_para$doloadData <- 'doinitialload'; control_para$doplot=FALSE; use_data$use_para <- ''; use_data$ms_tab <- use_data$ori_ms_tab;})
-  observeEvent(input$loadDemoButton, { control_para$doloadData <- 'doinitialdemoload'; control_para$doplot=FALSE; use_data$use_para <- ''; use_data$ms_tab <- use_data$ori_ms_tab;})
+  observeEvent(input$loadButton, { control_para$doloadData <- 'doinitialload'; use_data$choose_comp <- NULL; control_para$doplot=FALSE; use_data$use_para <- ''; use_data$ms_tab <- use_data$ori_ms_tab;})
+  observeEvent(input$loadDemoButton, { control_para$doloadData <- 'doinitialdemoload'; use_data$choose_comp <- NULL; control_para$doplot=FALSE; use_data$use_para <- ''; use_data$ms_tab <- use_data$ori_ms_tab;})
   observeEvent(input$doupdateMsTab, {
     control_para$doloadData <- 'doupdateMsTab';
     use_data$ms_tab <- use_data$tmp_ms_tab;
@@ -31,7 +31,6 @@ server <- function(input, output) {
   observeEvent(input$doFunctionEnrichPlot, {control_para$doplot <- 'doFunctionEnrichPlot'}) #6
   observeEvent(input$doBubblePlot, {control_para$doplot <- 'doBubblePlot'}) #7
   observeEvent(input$doNetBIDPlot, {control_para$doplot <- 'doNetBIDPlot'}) #8
-  
 
   ################
   # functions
@@ -54,6 +53,13 @@ server <- function(input, output) {
   # load the data
   loadData <- reactive({
     inFile <- input$ms_tab_RData_file
+    print(inFile$datapath)
+    if(is.null(inFile$datapath)==TRUE) {
+      control_para$doloadData <- FALSE;
+      output$error_message <- renderUI({p('WARNING : No input data, please check and re-try!')})
+      return()
+    }
+    output$error_message <- renderUI({p('')})
     load(inFile$datapath)
     ms_tab <- analysis.par$final_ms_tab
     col_class <- unlist(lapply(ms_tab,class))
@@ -70,6 +76,8 @@ server <- function(input, output) {
     all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
     all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
     use_data$all_comp <- all_comp
+    use_data$choose_comp <- NULL
+    print('Finish loading the dataset')
     if('transfer_tab' %in% names(analysis.par)) use_data$transfer_tab <- analysis.par$transfer_tab
   })
   # load in demo data
@@ -93,6 +101,7 @@ server <- function(input, output) {
     all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
     all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
     use_data$all_comp <- all_comp
+    use_data$choose_comp <- NULL
     if('transfer_tab' %in% names(analysis.par)) use_data$transfer_tab <- analysis.par$transfer_tab
   })
   # summary
@@ -102,10 +111,12 @@ server <- function(input, output) {
     if(control_para$doloadData=='doinitialdemoload') loadDemoData()
     ms_tab <- use_data$ms_tab
     all_comp <- use_data$all_comp
-    mess <- sprintf('The project name is %s <br> with the main directory in %s; %s; <br>  %s<br><br>In total %d TF and %d SIG. <br><br> %d comparisons are found in the master table: %s ',
-                    use_data$project.name,use_data$main.dir,use_data$basic_info,use_data$use_para,
-                    table(ms_tab$funcType)['TF'],table(ms_tab$funcType)['SIG'],
-                    length(all_comp),paste(all_comp,collapse=' ;'))
+    mess <- sprintf('<b>NOTE</b>: <br>* The project name is <b>%s</b> with the main directory in %s; <br>* %s;
+                     <br>%s<br>
+                     * In total <b>%d</b> TF and <b>%d</b> SIG. <br> %d comparisons are found in the master table: %s ',
+                     use_data$project.name,use_data$main.dir,use_data$basic_info,use_data$use_para,
+                     table(ms_tab$funcType)['TF'],table(ms_tab$funcType)['SIG'],
+                     length(all_comp),paste(all_comp,collapse=' ;'))
     HTML(mess)
   })
   #
@@ -123,12 +134,12 @@ server <- function(input, output) {
     }
     tagList(
     fluidRow(
-      column(6,offset=0,selectInput(inputId='use_spe',label='choose the species',choices=msigdbr_show_species(),selected = use_spe)),
-      column(6,offset=0,selectInput(inputId='use_level',label='choose the gene/transcript level',choices=c('gene','transcript'),selected = use_level))
+      column(6,offset=0,selectInput(inputId='use_spe',label='Choose the species',choices=msigdbr_show_species(),selected = use_spe)),
+      column(6,offset=0,selectInput(inputId='use_level',label='Choose the gene/transcript level',choices=c('gene','transcript'),selected = use_level))
     ),
     fluidRow(
-      column(6,offset=0,selectInput(inputId='choose_main_id_type',label='choose the main id type',choices=all_id_type,selected =from_type)),
-      column(6,offset=0,textInput(inputId='other_main_id_type',label='input the main id type (if choose other, name need to be found in biomaRT)', value = ''))
+      column(6,offset=0,selectInput(inputId='choose_main_id_type',label='Choose the main id type',choices=all_id_type,selected =from_type)),
+      column(6,offset=0,textInput(inputId='other_main_id_type',label='Input the main id type (if choose other, name need to be found in biomaRT)', value = ''))
     )
     )
   })
@@ -181,6 +192,7 @@ server <- function(input, output) {
       if(is.null(use_data$transfer_tab)==TRUE | input$use_level != use_level | from_type!=ori_from_type){
         use_genes <- unique(unlist(lapply(use_data$merge.network,function(x)x$target)))
         print(str(use_genes))
+        print('Original RData do not contain gene ID transfer table, the program will automatically generate it, please wait !')
         db.preload(use_spe=input$use_spe,use_level=input$use_level)
         transfer_tab <- get_IDtransfer2symbol2type(from_type = from_type,use_genes=use_genes,use_level=input$use_level) ## get transfer table !!!
         use_data$transfer_tab <- transfer_tab
@@ -196,15 +208,17 @@ server <- function(input, output) {
      scrollX = TRUE,fixedColumns=list(leftColumns=4),
      columnDefs = list(list(className = 'dt-center')),
      filter='top',
-     pageLength = 10)
+     pageLength = 5)
     )
   ################
   # draw options
   # 1
   output$VolcanoPlot_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
+    #control_para$doplot <- FALSE    
     ms_tab <- use_data$ms_tab
     all_comp <- use_data$all_comp
+    if(is.null(all_comp)==TRUE) return()
     all_col   <- colnames(ms_tab)
     all_logFC <- all_col[grep('logFC',all_col,ignore.case=TRUE)]
     all_Pv <- all_col[grep('P.Val',all_col,ignore.case=TRUE)]
@@ -247,6 +261,8 @@ server <- function(input, output) {
   # 2
   output$Heatmap_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
+    if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
+    control_para$doplot <- FALSE    
     ms_tab <- use_data$ms_tab
     cal.eset <- use_data$cal.eset
     all_choose <- c('Activity for top drivers in the master table','Expression for top drivers in the master table')
@@ -255,33 +271,37 @@ server <- function(input, output) {
     target_phe <- sapply(phe[,all_phe],function(x){sum(unlist(lapply(x,function(x1)grep(x1,use_data$choose_comp))))})
     all_phe <- all_phe[order(target_phe,decreasing = TRUE)]
     all_cluster <- c('pearson','spearman','euclidean','maximum','manhattan','canberra','binary','minkowski','kendall')
-    fluidRow(
-      column(3,tagList(
-        fluidRow(column(12,offset=0,radioButtons(inputId='draw_category',label='choose what to display',choices=all_choose,selected = all_choose[1]))),
-        fluidRow(column(12,offset=0,checkboxGroupInput(inputId='use_phe2',label='choose sample feature to display',choices=all_phe,selected =all_phe[1])))
-      )),
-      column(3,offset=0,tagList(
-        fluidRow(column(6,offset=0,checkboxInput(inputId='cluster_rows',label='cluster genes/drivers?',value = TRUE)),
-                 column(6,offset=0,checkboxInput(inputId='cluster_columns',label='cluster samples?',value = TRUE))),
-        fluidRow(column(6,offset=0,selectInput(inputId='clustering_distance_rows',label='strategy to cluster rows?',choices=all_cluster,selected=all_cluster[1])),
-                 column(6,offset=0,selectInput(inputId='clustering_distance_columns',label='strategy to cluster columns?',choices=all_cluster,selected=all_cluster[1]))),
-        fluidRow(column(6,offset=0,checkboxInput(inputId='show_row_names',label='display gene/driver name on the plot?',value = FALSE)),
-                 column(6,offset=0,checkboxInput(inputId='show_column_names',label='display sample name on the plot?',value = FALSE)))
-      )),
-      column(5,offset=1,tagList(
-        fluidRow(column(4,offset=0,radioButtons(inputId='top_strategy2',label='choose the top strategy for selection',choiceValues=c('UP','DOWN','Both'),
-                                                choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
-                 column(4,offset=0,numericInput(inputId='top_num2',label='number of top driver number (order by Z-statistics)',value=30,
-                                                min=0,max=Inf,step=1)),
-                 column(4,offset=0,radioButtons(inputId='scale',label='Scale by ?',choices=c('none','row','column'),selected = 'none'))),
-        fluidRow(column(4,offset=0,selectInput(inputId='label_col2',label='choose column to display name for the driver',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
-                 column(6,offset=2,actionButton(inputId='doHeatmap',label='Draw Heatmap')))
-      )
-    ))
+    tagList(
+      p(sprintf('You are focusing on %s',use_data$choose_comp)),
+      fluidRow(
+        column(3,tagList(
+          fluidRow(column(12,offset=0,radioButtons(inputId='draw_category',label='choose what to display',choices=all_choose,selected = all_choose[1]))),
+          fluidRow(column(12,offset=0,checkboxGroupInput(inputId='use_phe2',label='choose sample feature to display',choices=all_phe,selected =all_phe[1])))
+        )),
+        column(3,offset=0,tagList(
+          fluidRow(column(6,offset=0,checkboxInput(inputId='cluster_rows',label='cluster genes/drivers?',value = TRUE)),
+                   column(6,offset=0,checkboxInput(inputId='cluster_columns',label='cluster samples?',value = TRUE))),
+          fluidRow(column(6,offset=0,selectInput(inputId='clustering_distance_rows',label='strategy to cluster rows?',choices=all_cluster,selected=all_cluster[1])),
+                   column(6,offset=0,selectInput(inputId='clustering_distance_columns',label='strategy to cluster columns?',choices=all_cluster,selected=all_cluster[1]))),
+          fluidRow(column(6,offset=0,checkboxInput(inputId='show_row_names',label='display gene/driver name on the plot?',value = FALSE)),
+                   column(6,offset=0,checkboxInput(inputId='show_column_names',label='display sample name on the plot?',value = FALSE)))
+        )),
+        column(5,offset=1,tagList(
+          fluidRow(column(4,offset=0,radioButtons(inputId='top_strategy2',label='choose the top strategy for selection',choiceValues=c('UP','DOWN','Both'),
+                                                  choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
+                   column(4,offset=0,numericInput(inputId='top_num2',label='number of top driver number (order by Z-statistics)',value=30,
+                                                  min=0,max=Inf,step=1)),
+                   column(4,offset=0,radioButtons(inputId='scale',label='Scale by ?',choices=c('none','row','column'),selected = 'none'))),
+          fluidRow(column(4,offset=0,selectInput(inputId='label_col2',label='choose column to display name for the driver',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
+                   column(6,offset=2,actionButton(inputId='doHeatmap',label='Draw Heatmap')))
+        )
+        ))
+    )
   })
   # 3
   output$CategoryBoxPlot_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
+    control_para$doplot <- FALSE    
     ms_tab <- use_data$ms_tab
     all_phe <- get_int_group(use_data$cal.eset)
     phe <- pData(use_data$cal.eset)
@@ -298,7 +318,7 @@ server <- function(input, output) {
   # 4
   output$TargetNetPlot_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
-    if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
+    control_para$doplot <- FALSE    
     ms_tab <- use_data$ms_tab
     all_driver <- ms_tab$originalID_label ## unique!!!
     tagList(
@@ -319,12 +339,14 @@ server <- function(input, output) {
   #5
   output$GSEAPlot_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
+    control_para$doplot <- FALSE    
     if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
     ms_tab <- use_data$ms_tab
     uc <- gsub('(.*)_DA','\\1',use_data$choose_comp)
     uc <- gsub('(.*)_DE','\\1',uc)
     all_p_col <- intersect(colnames(use_data$DE[[uc]]),c('t','logFC','Z-statistics'))
     tagList(
+      p(sprintf('You are focusing on %s',use_data$choose_comp)),
       fluidRow(
         column(2,offset=0,selectInput(inputId='profile_col5',label='choose profile to plot',choices=all_p_col,selected = all_p_col[1])),
         column(2,offset=0,selectInput(inputId='profile_trend',label='choose profile trend',choices=c('pos2neg','neg2pos'),selected='pos2neg')),
@@ -357,6 +379,7 @@ server <- function(input, output) {
   #6
   output$FunctionEnrichPlot_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
+    control_para$doplot <- FALSE    
     if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
     ms_tab <- use_data$ms_tab
     use_gs1 <- unique(cbind(all_gs2gene_info$Category,all_gs2gene_info$Category_Info))
@@ -364,6 +387,7 @@ server <- function(input, output) {
     use_gs1[,2] <- paste(use_gs1[,1],use_gs1[,2],sep=':')
     use_gs2[,2] <- paste(use_gs2[,1],use_gs2[,2],sep=':')
     tagList(
+      p(sprintf('You are focusing on %s',use_data$choose_comp)),
       fluidRow(
         column(2,offset=0,checkboxGroupInput(inputId='use_gs1_6',label='choose Category to analyze',choiceNames=use_gs1[,2],choiceValues=use_gs1[,1],selected ='H')),
         column(3,offset=0,checkboxGroupInput(inputId='use_gs2_6',label='choose Sub-Category to analyze',choiceNames=use_gs2[,2],choiceValues=use_gs2[,1],
@@ -394,6 +418,7 @@ server <- function(input, output) {
   #7
   output$BubblePlot_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
+    control_para$doplot <- FALSE    
     if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
     ms_tab <- use_data$ms_tab
     use_gs1 <- unique(cbind(all_gs2gene_info$Category,all_gs2gene_info$Category_Info))
@@ -401,6 +426,7 @@ server <- function(input, output) {
     use_gs1[,2] <- paste(use_gs1[,1],use_gs1[,2],sep=':')
     use_gs2[,2] <- paste(use_gs2[,1],use_gs2[,2],sep=':')
     tagList(
+      p(sprintf('You are focusing on %s',use_data$choose_comp)),
       fluidRow(
         column(2,offset=0,checkboxGroupInput(inputId='use_gs1_7',label='choose Category to analyze',choiceNames=use_gs1[,2],choiceValues=use_gs1[,1],selected ='H')),
         column(3,offset=0,checkboxGroupInput(inputId='use_gs2_7',label='choose Sub-Category to analyze',choiceNames=use_gs2[,2],choiceValues=use_gs2[,1],
@@ -423,12 +449,14 @@ server <- function(input, output) {
             column(6,offset=2,actionButton(inputId='doBubblePlot',label='Draw Bubble Plot'))
           )
         ))),
-      p("NOTE: bubble plot will generate large size figures, please choose small top driver number !")
+      p("NOTE: bubble plot will generate large size figures, please choose small top driver number or use download button to get the pdf format figure file !")
     )
   })
   # 8
   output$NetBIDPlot_para <- renderUI({
     if(control_para$doloadData==FALSE) return()
+    if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
+    control_para$doplot <- FALSE    
     ms_tab <- use_data$ms_tab
     all_comp <- use_data$all_comp
     all_comp <- unique(gsub('(.*)_DA','\\1',all_comp))
@@ -436,6 +464,7 @@ server <- function(input, output) {
     choose_comp <- use_data$choose_comp
     choose_comp <- unique(gsub('(.*)_DA','\\1',choose_comp))
     tagList(
+      p(sprintf('You are focusing on %s',use_data$choose_comp)),
       fluidRow(column(6,offset=0,checkboxGroupInput(inputId='DA_list',label='choose DA comparisons to display',choices=all_comp,selected =choose_comp)),
                column(6,offset=0,checkboxGroupInput(inputId='DE_list',label='choose DE comparisons to display',choices=all_comp,selected =choose_comp))
       ),
@@ -588,7 +617,6 @@ server <- function(input, output) {
                                    main_cex=input$main_cex,strip_cex=input$strip_cex,class_cex=input$class_cex)
       }
     }
-    #
     if(control_para$doplot=='doTargetNetPlot'){ # 4
       use_data$plot_height <- as.numeric(input$plot_height4)
       use_data$plot_width <- as.numeric(input$plot_width4)
@@ -628,7 +656,6 @@ server <- function(input, output) {
                        label_cex=input$label_cex,source_cex=input$source_cex,n_layer=input$n_layer,alphabetical_order=input$alphabetical_order)
       }
     }
-  #
     if(control_para$doplot=='doGSEAPlot'){ # 5
       if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
       use_data$plot_height <- as.numeric(input$plot_height5)
@@ -636,20 +663,20 @@ server <- function(input, output) {
       ms_tab <- use_data$ms_tab
       z_col <- paste0('Z.',input$choose_comp)
       z_col_DE <- gsub("_DA","_DE",z_col)
+      z_col_DA <- gsub("_DE","_DA",z_col)
       ms_tab <- get_top_ms_tab(ms_tab,input$top_strategy5,input$top_num5,z_col)
       uc <- gsub('(.*)_DA','\\1',use_data$choose_comp)
       uc <- gsub('(.*)_DE','\\1',uc)
       res1 <- draw.GSEA.NetBID(DE = use_data$DE[[uc]], name_col = 'ID', profile_col = input$profile_col5,
                          profile_trend = input$profile_trend, driver_list = ms_tab$originalID_label,
                          show_label = ms_tab[,input$label_col5],
-                         driver_DA_Z = ms_tab[,z_col], driver_DE_Z = ms_tab[,z_col_DE],
+                         driver_DA_Z = ms_tab[,z_col_DA], driver_DE_Z = ms_tab[,z_col_DE],
                          target_list = use_data$merge.network,
                          top_driver_number = nrow(ms_tab), target_nrow = input$target_nrow,
                          target_col = input$target_col, target_col_type = input$target_col_type, left_annotation = "",
                          right_annotation = "", main = "", profile_sig_thre = input$profile_sig_thre,
                          Z_sig_thre = input$Z_sig_thre)
     }
-  #
     if(control_para$doplot=='doFunctionEnrichPlot'){ # 6
       if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
       use_data$plot_height <- as.numeric(input$plot_height6)
@@ -667,26 +694,25 @@ server <- function(input, output) {
                               cluster_gs = input$cluster_gs, cluster_gene = input$cluster_gene,
                               use_genes = NULL, return_mat = FALSE)
     }
-  #
     if(control_para$doplot=='doBubblePlot'){ # 7
       if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
       use_data$plot_height <- as.numeric(input$plot_height7)
       use_data$plot_width <- as.numeric(input$plot_width7)
       z_col <- paste0('Z.',input$choose_comp)
+      z_col_DA <- gsub("_DE","_DA",z_col)
       ms_tab <- get_top_ms_tab(ms_tab,input$top_strategy7,input$top_num7,z_col)
       bg_gene <- unique(unlist(lapply(use_data$merge.network,function(x)x$target)))
       #print(str(ms_tab))
       #print(str(bg_gene))
       #print(c(input$label_col7,z_col,input$min_gs_size7,input$max_gs_size7,input$Pv_adj7,input$Pv_thre7,input$top_geneset_number,input$top_num7))
       res1 <- draw.bubblePlot(driver_list = ms_tab$originalID_label, show_label = ms_tab[,input$label_col7],
-                      Z_val = ms_tab[,z_col], driver_type = NULL, target_list = use_data$merge.network,
+                      Z_val = ms_tab[,z_col_DA], driver_type = NULL, target_list = use_data$merge.network,
                       transfer2symbol2type = use_data$transfer_tab, bg_list = bg_gene, min_gs_size = input$min_gs_size7,
                       max_gs_size = input$max_gs_size7, use_gs = c(input$use_gs1_7,input$use_gs2_7),
                       display_gs_list = NULL, Pv_adj = input$Pv_adj7, Pv_thre = input$Pv_thre7,
                       top_geneset_number = input$top_geneset_number, top_driver_number = input$top_num7,
                       mark_gene = NULL, driver_cex = input$driver_cex7, gs_cex = input$gs_cex7)
     }
-  #
     if(control_para$doplot=='doNetBIDPlot'){ # 8
       if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
       use_data$plot_height <- as.numeric(input$plot_height8)
@@ -710,19 +736,190 @@ server <- function(input, output) {
     if(control_para$doloadData==FALSE) return()
     if(control_para$doplot==FALSE) return()
     if(control_para$doplot=='doVolcalnoPlot'){ #1
-      mess <- sprintf('%d drivers passed by the filter !',nrow(use_data$tmp_ms_tab));
+      mess <- sprintf('<b>MESSAGE</b>: %d drivers passed by the filter !',nrow(use_data$tmp_ms_tab));
        tagList(
-        fluidRow(
-          column(4,offset=0,HTML(mess)),
+         hr(),
+         fluidRow(
+          column(4,offset=1,HTML(mess)),
           column(6,offset=0,actionButton(inputId='doupdateMsTab',label='Update the master table by using the parameters and top number above'))
         )
       )
     }
   })
   ##
+  output$downloadPlotButton <- downloadHandler(
+    filename = function(){sprintf('%s.pdf',gsub('do(.*)','\\1',control_para$doplot))},
+    content = function(file) {
+      if(control_para$doloadData==FALSE) return()
+      if(control_para$doplot==FALSE) return()
+      ms_tab <- use_data$ms_tab
+      merge.ac.eset <- use_data$merge.ac.eset
+      cal.eset <- use_data$cal.eset
+      phe <- pData(cal.eset)
+      if(control_para$doplot=='doVolcalnoPlot'){ # 1
+        use_ms_tab <- ms_tab[which(ms_tab$Size>=as.numeric(input$min_Size) & ms_tab$Size<=as.numeric(input$max_Size)),]
+        res1 <- draw.volcanoPlot(dat=use_ms_tab,label_col = input$label_col1,logFC_col = input$logFC_col, Pv_col=input$Pv_col,
+                                 logFC_thre = as.numeric(input$logFC_thre), Pv_thre=as.numeric(input$Pv_thre), show_label = input$show_label,
+                                 pdf_file = file)
+      }
+      if(control_para$doplot=='doHeatmap'){ #2
+        z_col <- paste0('Z.',input$choose_comp)
+        ms_tab <- get_top_ms_tab(ms_tab,input$top_strategy2,input$top_num2,z_col)
+        if(input$draw_category=='Activity for top drivers in the master table'){mat <- exprs(use_data$merge.ac.eset);mat1 <- mat[ms_tab$originalID_label,];}
+        if(input$draw_category=='Expression for top drivers in the master table'){mat <- exprs(use_data$cal.eset);mat1 <- mat[ms_tab$originalID,];}
+        display_row <- ms_tab[,input$label_col2]
+        mat1 <- as.matrix(mat1)
+        rr <- 12;rc <- 12;
+        if(is.null(input$row_cex)==FALSE) rr <- as.numeric(input$row_cex)
+        if(is.null(input$col_cex)==FALSE) rc <- as.numeric(input$col_cex);
+        res1 <- draw.heatmap(mat=mat1,use_gene_label = display_row, phenotype_info = phe,use_phe = input$use_phe2,
+                             show_row_names=input$show_row_names, show_column_names=input$show_column_names,
+                             cluster_rows=input$cluster_rows, cluster_columns=input$cluster_columns,
+                             row_names_gp=gpar(fontsize = rr),
+                             column_names_gp=gpar(fontsize = rc),scale=input$scale,
+                             clustering_distance_rows=input$clustering_distance_rows,clustering_distance_columns=input$clustering_distance_columns,pdf_file = file)
+      }
+      if(control_para$doplot=='doCategoryBoxPlot'){ # 3
+        mat_ac <- exprs(use_data$merge.ac.eset)
+        mat_exp <- exprs(use_data$cal.eset)
+        phe <- pData(use_data$cal.eset)
+        use_driver <- input$choose_driver3
+        rownames(ms_tab) <- ms_tab$originalID_label
+        use_obs_class <- get_obs_label(phe,use_col=input$use_phe3)
+        use_gene <- ms_tab[use_driver,'originalID']
+        if(use_gene %in% rownames(mat_exp)){
+          res1 <- draw.categoryValue(ac_val=mat_ac[use_driver,],exp_val=mat_exp[use_gene,],use_obs_class = use_obs_class,
+                                     main_ac=ms_tab[use_driver,'gene_label'],main_exp=ms_tab[use_driver,'geneSymbol'],
+                                     main_cex=input$main_cex,strip_cex=input$strip_cex,class_cex=input$class_cex,pdf_file = file)
+        }else{
+          res1 <- draw.categoryValue(ac_val=mat_ac[use_driver,],use_obs_class = use_obs_class,main_ac=ms_tab[use_driver,'gene_label'],
+                                     main_cex=input$main_cex,strip_cex=input$strip_cex,class_cex=input$class_cex,pdf_file = file)
+        }
+      }
+      if(control_para$doplot=='doTargetNetPlot'){ # 4
+        use_driver <- input$choose_driver4
+        use_driver2 <- input$choose_driver4_2
+        use_target <- use_data$merge.network[[use_driver]]
+        edge_score <- use_target$MI*sign(use_target$spearman)
+        names(edge_score) <- use_target$target
+        z_col <- paste0('Z.',input$choose_comp)
+        print(str(use_data$transfer_tab))
+        if(input$use_protein_coding4==TRUE){
+          w1 <- which(names(edge_score) %in% use_data$transfer_tab[which(use_data$transfer_tab[,3]=='protein_coding'),1])
+          edge_score <- edge_score[w1]
+        }
+        if(input$use_gene_symbol4==TRUE) names(edge_score) <- get_name_transfertab(use_genes=names(edge_score),transfer_tab=use_data$transfer_tab)
+        if(use_driver2!=use_driver){
+          use_target2 <- use_data$merge.network[[use_driver2]]
+          edge_score2 <- use_target2$MI*sign(use_target2$spearman)
+          names(edge_score2) <- use_target2$target
+          z_col <- paste0('Z.',input$choose_comp)
+          if(input$use_protein_coding4==TRUE){
+            w1 <- which(names(edge_score2) %in% use_data$transfer_tab[which(use_data$transfer_tab[,3]=='protein_coding'),1])
+            edge_score2 <- edge_score2[w1]
+          }
+          if(input$use_gene_symbol4==TRUE) names(edge_score2) <- get_name_transfertab(use_genes=names(edge_score2),transfer_tab=use_data$transfer_tab)
+          draw.targetNet.TWO(source1_label = ms_tab[use_driver,input$label_col4],source2_label = ms_tab[use_driver2,input$label_col4],
+                             source1_z=ms_tab[use_driver,z_col],source2_z=ms_tab[use_driver2,z_col],
+                             edge_score1=edge_score,edge_score2=edge_score2,
+                             label_cex=input$label_cex,source_cex=input$source_cex,n_layer=input$n_layer,alphabetical_order=input$alphabetical_order,pdf_file = file)
+        }else{
+          print(str(edge_score))
+          draw.targetNet(source_label = ms_tab[use_driver,input$label_col4],source_z=ms_tab[use_driver,z_col],edge_score=edge_score,
+                         label_cex=input$label_cex,source_cex=input$source_cex,n_layer=input$n_layer,alphabetical_order=input$alphabetical_order,pdf_file = file)
+        }
+      }
+      if(control_para$doplot=='doGSEAPlot'){ # 5
+        if(is.null(use_data$choose_comp)==TRUE) return()
+        ms_tab <- use_data$ms_tab
+        z_col <- paste0('Z.',input$choose_comp)
+        z_col_DE <- gsub("_DA","_DE",z_col)
+        ms_tab <- get_top_ms_tab(ms_tab,input$top_strategy5,input$top_num5,z_col)
+        uc <- gsub('(.*)_DA','\\1',use_data$choose_comp)
+        uc <- gsub('(.*)_DE','\\1',uc)
+        res1 <- draw.GSEA.NetBID(DE = use_data$DE[[uc]], name_col = 'ID', profile_col = input$profile_col5,
+                                 profile_trend = input$profile_trend, driver_list = ms_tab$originalID_label,
+                                 show_label = ms_tab[,input$label_col5],
+                                 driver_DA_Z = ms_tab[,z_col], driver_DE_Z = ms_tab[,z_col_DE],
+                                 target_list = use_data$merge.network,
+                                 top_driver_number = nrow(ms_tab), target_nrow = input$target_nrow,
+                                 target_col = input$target_col, target_col_type = input$target_col_type, left_annotation = "",
+                                 right_annotation = "", main = "", profile_sig_thre = input$profile_sig_thre,
+                                 Z_sig_thre = input$Z_sig_thre,pdf_file = file)
+      }
+      if(control_para$doplot=='doFunctionEnrichPlot'){ # 6
+        if(is.null(use_data$choose_comp)==TRUE) return()
+        z_col <- paste0('Z.',input$choose_comp)
+        ms_tab <- get_top_ms_tab(ms_tab,input$top_strategy6,input$top_num6,z_col)
+        funcEnrich_res <- funcEnrich.Fisher(input_list = ms_tab$geneSymbol, bg_list = unique(use_data$ori_ms_tab$geneSymbol),
+                                            use_gs = c(input$use_gs1_6,input$use_gs2_6),
+                                            min_gs_size = input$min_gs_size6, max_gs_size = input$max_gs_size6,
+                                            Pv_adj = input$Pv_adj6, Pv_thre = input$Pv_thre6)
+        res1 <- draw.funcEnrich.cluster(funcEnrich_res = funcEnrich_res, top_number = input$top_gs_num6,
+                                        Pv_col = "Ori_P", name_col = "#Name",
+                                        item_col = "Intersected_items", Pv_thre = input$Pv_thre6, gs_cex = input$gs_cex6,
+                                        gene_cex = input$gene_cex6, pv_cex = input$pv_cex6, main = "", h = input$h6,
+                                        cluster_gs = input$cluster_gs, cluster_gene = input$cluster_gene,
+                                        use_genes = NULL, return_mat = FALSE,pdf_file = file)
+      }
+      if(control_para$doplot=='doBubblePlot'){ # 7
+        if(is.null(use_data$choose_comp)==TRUE) return()
+        z_col <- paste0('Z.',input$choose_comp)
+        ms_tab <- get_top_ms_tab(ms_tab,input$top_strategy7,input$top_num7,z_col)
+        bg_gene <- unique(unlist(lapply(use_data$merge.network,function(x)x$target)))
+        res1 <- draw.bubblePlot(driver_list = ms_tab$originalID_label, show_label = ms_tab[,input$label_col7],
+                                Z_val = ms_tab[,z_col], driver_type = NULL, target_list = use_data$merge.network,
+                                transfer2symbol2type = use_data$transfer_tab, bg_list = bg_gene, min_gs_size = input$min_gs_size7,
+                                max_gs_size = input$max_gs_size7, use_gs = c(input$use_gs1_7,input$use_gs2_7),
+                                display_gs_list = NULL, Pv_adj = input$Pv_adj7, Pv_thre = input$Pv_thre7,
+                                top_geneset_number = input$top_geneset_number, top_driver_number = input$top_num7,
+                                mark_gene = NULL, driver_cex = input$driver_cex7, gs_cex = input$gs_cex7,pdf_file = file)
+      }
+      if(control_para$doplot=='doNetBIDPlot'){ # 8
+        if(is.null(use_data$choose_comp)==TRUE) return()
+        DA <- use_data$DA; DE <- use_data$DE;
+        DA_list <- input$DA_list;
+        DE_list <- input$DE_list;
+        choose_comp <- use_data$choose_comp
+        choose_comp <- unique(gsub('(.*)_DA','\\1',choose_comp))
+        print(str(DA[DA_list])); print(str(DE[DE_list])); print(input$choose_comp)
+        res1 <- draw.NetBID(DA_list = DA[DA_list], DE_list = DE[DE_list], main_id = choose_comp,
+                            top_number = input$top_number8, DA_display_col = input$DA_display_col,
+                            DE_display_col = input$DE_display_col, z_col = "Z-statistics", digit_num = 2,
+                            row_cex = input$row_cex, column_cex = input$column_cex, text_cex = input$text_cex, col_srt = 60,pdf_file = file)
+      }
+    }
+  )
+  ##
+  output$masterTable.ui <- renderUI({
+    if(control_para$doloadData==FALSE) return()
+    tagList(
+      hr(),      
+      h4('Master table for the dataset',style='text-align:left')
+    )
+  })
+  output$about.ui <- renderUI({
+    control_para$doplot <- FALSE
+    tagList(
+      hr(),      
+      h4('NetBIDShiny: A shiny app to visualize the NetBID results',style='text-align:left'),
+      a('Github address: https://github.com/jyyulab/NetBID_shiny/',href='https://github.com/jyyulab/NetBID_shiny/',target='_',style = "font-size:120%;"),
+      br(),
+      a('Online manual: https://jyyulab.github.io/NetBID_shiny/',href='https://jyyulab.github.io/NetBID_shiny/',target='_',style = "font-size:120%;"),
+      h4('Current NetBID algorithm, NetBID2: data-driven Network-based Bayesian Inference of Drivers, Version II'),
+      a('Github address: https://github.com/jyyulab/NetBID-dev',href='https://github.com/jyyulab/NetBID-dev/',target='_',style = "font-size:120%;"),
+      br(),
+      a('Online manual: https://jyyulab.github.io/NetBID-dev/',href='https://jyyulab.github.io/NetBID-dev/',target='_',style = "font-size:120%;")
+    )
+  })
   output$plot.ui <- renderUI({
     if(control_para$doplot==FALSE) return()
     tagList(
+      hr(),
+      fluidRow(
+        column(5,offset=0,h4('Plot Region',style='text-align:left')),
+        column(5,offset=2,downloadButton('downloadPlotButton', 'Download the current plot',style='text-align:right'))
+      ),br(),br(),
       div(htmlOutput('plotWarnning')),
       div(htmlOutput('plotPara'),style="align:center;font-size:70%;height:50%;background-color:#F8F9F9;width:100%;margin:0%;padding-left:5%;text-align:center"),
       div(htmlOutput("mainPlot"),style="background-color:#FDFEFE")

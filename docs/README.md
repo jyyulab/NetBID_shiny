@@ -1,1 +1,1 @@
-# scMINER documentation
+# NetBID documentation
