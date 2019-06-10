@@ -75,9 +75,9 @@
       <div class="main-content js-main-content" tabindex="0">
         
         <div id="main-content" class="page-content" role="main">
-          <h1 class="fs-9" id="a-shiny-app-for-netbid2-result-analyze-and-visualization">A shiny app for NetBID2 result analyze and visualization.</h1>
+          <h1 class="fs-9" id="netbid2-shiny-app-for-online-analysis-and-interactive-visualization">NetBID2 Shiny app for online analysis and interactive visualization</h1>
 
-<p class="fs-6 fw-300">This is the documentation for the usage of NetBIDshiny.</p>
+<p class="fs-6 fw-300">Online tutorial and documentation of NetBIDshiny.</p>
 
 <p><a href="#getting-started" class="btn btn-primary fs-5 mb-4 mb-md-0 mr-2">Get started now</a> <a href="https://github.com/jyyulab/NetBID_shiny" class="btn fs-5">View it on GitHub</a></p>
 
@@ -85,9 +85,9 @@
 
 <h2 id="overview">Overview</h2>
 
-<p>NetBIDshiny is a shiny app for NetBID2 (data-driven context-specific network and Bayesian inference, version II) visualization functions.</p>
+<p>NetBIDshiny is a R Shiny web app, it provides an interactive online visualization tool for further analysis of drivers obtained from NetBID2.</p>
 
-<p>Current newest version of NetBID is NetBID2, which could be found at <a href="https://github.com/jyyulab/NetBID-dev">NetBID2</a> with online tutorial found at <a href="https://jyyulab.github.io/NetBID-dev/">NetBID2 tutorial</a>.</p>
+<p>NetBID2 is the upgraded second version of NetBID, which is a data-driven systems biology algorithm, using network-based Bayesian inference approach to find drivers from transcriptomics, proteomics and phosphoproteomics data. The NetBID2 R package can be found at <a href="https://github.com/jyyulab/NetBID-dev">NetBID2</a>, and online tutorial can be found at <a href="https://jyyulab.github.io/NetBID-dev/">NetBID2 tutorial</a>.</p>
 
 <hr />
 
@@ -99,10 +99,10 @@
 
 <p>NetBID2, version &gt;= 0.1.1</p>
 
-<h3 id="quick-start-install-r-packages-netbidshiny">Quick start: install R packages (NetBIDshiny)</h3>
+<h3 id="quick-start-install-r-package-netbidshiny">Quick start: install R package (NetBIDshiny)</h3>
 
 <ul>
-  <li>install the R packages from github (not published yet)</li>
+  <li>install the R package from github (not published yet)</li>
 </ul>
 
 <div class="language-R highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">devtools</span><span class="p">)</span><span class="w">
@@ -110,15 +110,15 @@
 </span></code></pre></div></div>
 
 <ul>
-  <li>OR, download the released source package from <a href="https://github.com/jyyulab/NetBID_shiny/releases/download/0.1.0/NetBIDshiny_0.1.0.tar.gz">NetBIDshiny_0.1.0.tar.gz</a> and local install</li>
+  <li>OR, download the released source package from <a href="https://github.com/jyyulab/NetBID_shiny/releases/download/0.1.0/NetBIDshiny_0.1.0.tar.gz">NetBIDshiny_0.1.0.tar.gz</a> and install locally</li>
 </ul>
 
 <div class="language-R highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">install.packages</span><span class="p">(</span><span class="s1">'NetBIDshiny_0.1.0.tar.gz'</span><span class="p">,</span><span class="n">repos</span><span class="o">=</span><span class="kc">NULL</span><span class="p">)</span><span class="w">
 </span></code></pre></div></div>
 
-<h3 id="usage-of-netbidshiny">Usage of NetBIDShiny</h3>
+<h3 id="initiate-the-netbidshiny-web-app">Initiate the NetBIDShiny web app</h3>
 
-<p>There is only one function in the package, directly call it and a local web server will be ready for use.</p>
+<p>Call <code class="highlighter-rouge">run_NetBID_shiny()</code> to initiate the app.</p>
 
 <div class="language-R highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">NetBIDshiny</span><span class="p">)</span><span class="w">
 </span><span class="n">run_NetBID_shiny</span><span class="p">()</span><span class="w">
@@ -126,27 +126,27 @@
 
 <p>Then open a browser and enter local url address (e.g: http://127.0.0.1:XXXX).</p>
 
-<h3 id="online-demo-server">Online demo server</h3>
+<h3 id="online-server">Online server</h3>
 
-<p>The online public version of NetBIDshiny could be found at <a href="XXX">XXX</a>. User could choose to use it without local install.</p>
+<p>The public online version of NetBIDshiny can be found here <a href="XXX">XXX</a>. This doesn’t require the local installation.</p>
 
 <hr />
 
 <h2 id="design-manual">Design manual</h2>
 
-<p>The manual for all functions in NetBID2 could be obtained from <a href="https://github.com/jyyulab/NetBID_shiny/blob/master/NetBIDshiny_0.1.0.pdf">NetBIDshiny_0.1.0.pdf</a>.</p>
+<p>The manual of all the NetBID2 functions is linked here <a href="https://github.com/jyyulab/NetBID_shiny/blob/master/NetBIDshiny_0.1.0.pdf">NetBIDshiny_0.1.0.pdf</a>.</p>
 
 <h2 id="tutorial">Tutorial</h2>
 
-<p>We choose the same demo dataset as NetBID2 from GEO database: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028">GSE116028</a>.</p>
+<p>We choose the demo dataset from GEO database as in NetBID2: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028">GSE116028</a>.</p>
 
-<p>Check <a href="docs/tutorial">Tutorial page</a> for detail.</p>
+<p>Please check <a href="docs/tutorial">Tutorial page</a> for more details.</p>
 
 <hr />
 
 <h2 id="about-the-project">About the project</h2>
 
-<p>For the detailed description of NetBID algorithm, please refer our lab page <a href="https://stjuderesearch.org/site/lab/yu">View Yu Lab@St. Jude</a>.</p>
+<p>For the detailed description of NetBID algorithm, please check our lab page <a href="https://stjuderesearch.org/site/lab/yu">View Yu Lab@St. Jude</a>.</p>
 
 <h3 id="license">License</h3>
 

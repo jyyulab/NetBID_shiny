@@ -1,192 +1,196 @@
 ---
+title: "Tutorial"
 layout: default
-title: Tutorial
 nav_order: 2
-has_children: false
 permalink: ../docs/tutorial
+has_children: no
 ---
 
 # Tutorial
 
-The purpose for NetBIDshiny: 
+The purpose of NetBIDshiny: 
 
-**further analyze and visualize the results for drivers**.
+**provide an interactive online visualization tool for further analysis of drivers**.
 
-We choose the same demo dataset from GEO database: [GSE116028](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028). 
+We use the same demo data set as in NetBID2, from GEO database: [GSE116028](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028). 
 
-This dataset contains microarray data for 13 adult medulloblastoma (MB) samples. 
-Three subgroups of adult MB were identified by distinct expression profiles, clinical features, pathological features, and prognosis, including 3 SHH, 4 WNT, and 6 Group4.
-From them, Group4 tumors in adult had significantly worse progression-free and overall survival compared with tumors of the other molecular subtypes. 
-Here, we want to **find potential hidden drivers in Group4 compared with the other subtypes by using NetBID2**, for which may be related with the specific clinical feature for Group4 MB.
-
+This microarray dataset contains 13 adult medulloblastoma (MB) samples. 
+Three phenotype subgroups of adult MB have been identified from distinguishabled expression profiles, clinical features, pathological features and prognosis.
+These subgroups together with their sample numbers are, 3 SHH, 4 WNT, and 6 Group4.
+Group4 tumors in adult have significantly worse progression-free and overall survival, compared to other molecular subtypes of tumor.
+Here, the goal is to **find potential drivers in Group4 compared to other subtypes using NetBID2**. This may relate to specific clinical feature of Group4 MB subtype.
 
 ----------
-## Quick Navigation for this page
+## Quick Navigation
 
-- [Before start: Introduction to the server's interface & pre-request](#before-start-introduction-to-the-servers-interface--pre-request)
+- [Introduction to User Interface of NetBIDshiny](#introduction-to-user-interface-of-netbidshiny)
 
-- [Upload the RData dataset](#upload-the-rdata-dataset)
+- [Upload the RData](#upload-the-rdata)
 
-- [Plot part](#plot-part)
+- [Navigate through the master table](#navigate-through-the-master-table)
 
-  - [VOLCANO_PLOT: Draw the Volcano plot to get the top differentiated expression/activity driver list](#volcano_plot-draw-the-volcano-plot-to-get-the-top-differentiated-expressionactivity-driver-list)
+- [Plots](#plots)
 
-  - [NETBID_PLOT: Draw the NetBID plot to get the detailed statistics of the top differentiated expression/activity driver list](#netbid_plot-draw-the-netbid-plot-to-get-the-detailed-statistics-of-the-top-differentiated-expressionactivity-driver-list)
+  - [VOLCANO_PLOT: quickly identify the top differentially expressed/activated drivers](#volcano_plot-quickly-identify-the-top-differentially-expressedactivated-drivers)
 
-  - [GSEA_PLOT: Draw the GSEA plot to get the detailed information of the top differentiated activity driver list](#gsea_plot-draw-the-gsea-plot-to-get-the-detailed-information-of-the-top-differentiated-activity-driver-list)
+  - [NETBID_PLOT: get the statistics of the top differentially expressed/activated drivers](#netbid_plot-get-the-statistics-of-the-top-differentially-expressedactivated-drivers)
 
-  - [HEATMAP: Draw the Heatmap to get the expression/activity pattern for the top driver list Vs. all samples](#heatmap-draw-the-heatmap-to-get-the-expressionactivity-pattern-for-the-top-driver-list-vs-all-samples)
+  - [GSEA_PLOT: get the detailed statistics of the top differentially expressed/activated drivers](#gsea_plot-get-the-detailed-statistics-of-the-top-differentially-expressedactivated-drivers)
 
-  - [FUNCTION_ENRICH_PLOT: Draw the Function Enrichment plot to get the function annotation for the top driver list](#function_enrich_plot-draw-the-function-enrichment-plot-to-get-the-function-annotation-for-the-top-driver-list)
+  - [HEATMAP: get the expression/activity pattern of the top drivers across all samples](#heatmap-get-the-expressionactivity-pattern-of-the-top-drivers-across-all-samples)
 
-  - [BUBBLE_PLOT: Draw the Bubble plot to get the function annotation for the top driver list and their target genes](#bubble_plot-draw-the-bubble-plot-to-get-the-function-annotation-for-the-top-driver-list-and-their-target-genes)
+  - [FUNCTION_ENRICH_PLOT: get the functional annotation for the top drivers](#function_enrich_plot-get-the-functional-annotation-for-the-top-drivers)
 
-  - [TARGET_NET: Draw the Target Network plot to draw the sub-network structure for one selected driver](#target_net-draw-the-target-network-plot-to-draw-the-sub-network-structure-for-one-selected-driver)
+  - [BUBBLE_PLOT: get the functional annotation for the top drivers and their target genes](#bubble_plot-get-the-functional-annotation-for-the-top-drivers-and-their-target-genes)
 
-  - [CATEGORY_BOXPLOT: Draw the Category box plot to get the expression/activity value distribution in each group of samples](#category_boxplot-draw-the-category-box-plot-to-get-the-expressionactivity-value-distribution-in-each-group-of-samples)
+  - [TARGET_NET: show the sub-network structure of one selected driver](#target_net-show-the-sub-network-structure-of-one-selected-driver)
+
+  - [CATEGORY_BOXPLOT: get the distribution of one driver’s expression/activity value across group samples](#category_boxplot-get-the-distribution-of-one-drivers-expressionactivity-value-across-group-samples)
 
 ---------
 
-## Before start: Introduction to the server's interface & pre-request
+## Introduction to User Interface of NetBIDshiny
 
-In the "Driver estimation" part of NetBID2 analysis, the final step is to generate a master table. If user strictly follow the suggested pipeline in NetBID2 analysis, and save an RData file by using `NetBID.saveRData(analysis.par=analysis.par,step='ms-tab')`, he will get an RData file under the `analysis.par$out.dir.DATA` directory with name as `analysis.par.Step.ms-tab.RData`. The RData file will contains one complicated list object `analysis.par` with following components:
-
-- **main.dir**, the main directory for the project, required for NetBIDshiny. 
-- **project.name**, the project name, required for NetBIDshiny. 
-- **merge.network**, a list with three components (target_list,igraph_obj,target_net) which contains detailed network structure for the NetBID analysis, required for NetBIDshiny.
-- **cal.eset**, a ExpressionSet class object for the expression value of the analysis dataset, required for NetBIDshiny.
-- **merge.ac.eset**, a ExpressionSet class object for the activity value of the analysis dataset, required for NetBIDshiny.
-- **final_ms_tab**, a data frame containing detailed results for all tested drivers, required for NetBIDshiny.
-- **transfer_tab**, a data frame for ID conversion, required but not necessary to run NetBIDshiny, if not included in the RData, it will automatically generate it in the first loading of the data. 
-- out.dir out.dir.QC out.dir.DATA out.dir.PLOT, the directory structure for the NetBID project, not required for NetBIDshiny. 
-- DE DA, detailed differentiated expression (DE)/activity (DA) statistics, not required for NetBIDshiny.
-
-Check the following diagram:
+The following screenshot is the user interface of NetBIDshiny,
 
 ![f1](f1.png)
 
-The interface is consisted of four parts:
+**The user interface consists of 4 parts:**
 
-- Topleft, mainly for manipulating the data sets; User could browser the dataset in the local file system, choose the species, analysis level, main id type for the selected dataset and upload the dataset. The demo dataset could be used for getting familiar with the app.
+- Top left is for target dataset manipulation. Users can upload the target Rdata from local path, choose species name, analysis level and ID type for analysis. We also provide a button to load the demo dataset, so users can have a taste of how NetBIDshiny works.
 
-- Bottomleft, mainly for browsering the master table in this project. User could search and visualize the driver's detailed information.
+- Bottom left is for master table display. Each row is a driver, containing all the statistics calculated by NetBID2 analysis.
 
-- Topright, mainly for selecting the plot type and the choice of parameters for each plot.
+- Top right is for plot type selection, with plot type tabs and options.
 
-- Bottomright, mainly for the plot region, including the basic adjusting bar and one figure download button. User could choose to directly save the plot by right click on the plot and save it into the png format or use the download button, it will save the current figure into a pdf file.
+- Bottom right is the plot panel. It includes adjusting bars and figure download button. Users can save the plot as PNG by right click, or click the button to download it as PDF.
 
-The name for the plot tabs:
+**Plot types and tabs:**
 
-- **VOLCANO_PLOT**, the volcano plot to get the top differentiated expression/activity driver list, will call `draw.volcanoPlot()` in NetBID2.
-- **NETBID_PLOT**, the NETBID plot to get the statistics of top differentiated expression/activity driver list, will call `draw.NetBID()` in NetBID2.
-- **GSEA_PLOT**, the GSEA plot to get the detailed statistics of the top differentiated expression/activity driver list, will call `draw.GSEA.NetBID()` in NetBID2.
-- **HEATMAP**, the Heatmap to get the expression/activity pattern for the top driver list Vs. all samples, will call `draw.volcanoPlot()` in NetBID2.
-- **FUNCTION_ENRICH_PLOT**, the Function Enrichment plot to get the function annotation for the top driver list, will call `draw.funcEnrich.cluster()` in NetBID2.
-- **BUBBLE_PLOT**, the Bubble plot to get the function annotation for the top driver list and their target genes, will call `draw.bubblePlot()` in NetBID2.
-- **TARGET_NET** , the Target Network plot to draw the sub-network structure for one selected driver, will call `draw.targetNet()` and `draw.targetNet.TWO()` in NetBID2.
-- **CATEGORY_PLOT**, the Category box plot to get the expression/activity value distribution in each group of samples, will call `draw.categoryValue()` in NetBID2.
+- **VOLCANO_PLOT**, the volcano plot used to quickly identify the top differentially expressed/activated drivers. Created by `draw.volcanoPlot()` in NetBID2.
+- **NETBID_PLOT**, the NETBID plot used to get the statistics of the top differentially expressed/activated drivers. Created by `draw.NetBID()` in NetBID2.
+- **GSEA_PLOT**, the GSEA plot used to get the detailed statistics of the top differentially expressed/activated drivers. Created by `draw.GSEA.NetBID()` in NetBID2.
+- **HEATMAP**, the heatmap used to get the expression/activity pattern of the top drivers across all samples. Created by `draw.heatmap()` in NetBID2.
+- **FUNCTION_ENRICH_PLOT**, the Function Enrichment plot used to get the functional annotation for the top drivers. Created by `draw.funcEnrich.cluster()` in NetBID2.
+- **BUBBLE_PLOT**, the bubble plot used to get the functional annotation for the top drivers and their target genes. Created by `draw.bubblePlot()` in NetBID2.
+- **TARGET_NET** , the Target Network plot used to show the sub-network structure of one selected driver. Created by `draw.targetNet()` and `draw.targetNet.TWO()` in NetBID2.
+- **CATEGORY_PLOT**, the grouped box plot used to get the distribution of one driver's expression/activity value across group samples. Created by `draw.categoryValue()` in NetBID2.
 
-## Upload the RData dataset 
+## Upload the RData
 
-The first step is to upload the RData. 
+**Before start, take a quick review of the target RData generation.**
 
-User could click the **BROWSE** button and select the RData file stored locally. 
-After that, choose:
+The input RData is a super list object `analysis.par` with multiple elements wrapped inside, which including the master table. 
+It is created by the "Driver Estimation" step in NetBID2 analysis. It is saved as RData using this command `NetBID.saveRData(analysis.par=analysis.par,step='ms-tab')`. For details, please check the drivers estimation pipeline from NetBID2 online tutorial. The RData is saved in `analysis.par$out.dir.DATA` directory, with file name `analysis.par.Step.ms-tab.RData`. 
 
-- the species name in the select list (currently only 11 species is allowed due to the MSigDB annotation limitation). 
-- the gene/transcript level, this is the level for the driver main ID type.
-- the main id type, user could select the matched main ID type for the driver (the list contains 10 most common ID type). If it is not included in the list, user could manually enter it in the textbox in the right. For the full list of allowed id type, user could follow the instruction of [biomaRt](https://www.bioconductor.org/packages/devel/bioc/vignettes/biomaRt/inst/doc/biomaRt.html) or try the following locally:
+Details about the `analysis.par` Rdata:
+
+- **main.dir**, the main directory of the project, required by NetBIDshiny. 
+- **project.name**, the project name, required by NetBIDshiny. 
+- **merge.network**, a list with three elements (`target_list`, `igraph_obj` and `target_net`) which contains the detailed network structure from the NetBID, required by NetBIDshiny.
+- **cal.eset**, an ExpressionSet class object storing the expression matrix, phenotype information and feature informaiton, required by NetBIDshiny.
+- **merge.ac.eset**, an ExpressionSet class object for the activity value of the analysis dataset, required for NetBIDshiny.
+- **final_ms_tab**, a data frame containing detailed results for all tested drivers, required by NetBIDshiny.
+- **transfer_tab**, a data frame for ID conversion. It is suggested but not required to run NetBIDshiny. If it is not included in the uploading RData, NetBIDshiny will automatically generate one.
+- out.dir (out.dir.QC, out.dir.DATA, out.dir.PLOT), the directory and sub-directories of NetBID project, not required by NetBIDshiny. 
+- DE and DA, contain detailed differential expression (DE)/activity (DA) statistics, not required by NetBIDshiny.
+
+**Upload the RData.**
+
+Click the **BROWSE** button and select the target RData file from your PC.
+Then, please choose:
+
+- the species name in the select list (currently only 11 species is allowed, due to the MSigDB annotation limitation). 
+- the gene/transcript level, this is the level of the driver's main ID type.
+- the main ID type, please select the ID type for your drivers (the select list has 10 most common ID types). If it is not listed, user can enter it manually in the textbox on the right. For access to the full list of allowed ID types, please check [biomaRt](https://www.bioconductor.org/packages/devel/bioc/vignettes/biomaRt/inst/doc/biomaRt.html) or try the scripts below.
 
 ```r
 ensembl <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
 listAttributes(ensembl)
 ```
-Click the **LOAD/RELOAD THE UPLOADED RDATA** button and wait for data uploading. Here, for demo, user could directly click **LOAD/RELOAD THE DEMO RDATA**. 
-Once finished, user will see the following interface (the browser bar will not be shown if choose the demo dataset):
+
+Then click the **LOAD/RELOAD THE UPLOADED RDATA** button to load the target RData. For demo RData, user can directly click the **LOAD/RELOAD THE DEMO RDATA** button.
+After the upload of the targe RData, the master table and the "NOTE" messages will be displayed. And the **VOLCANO_PLOT**,**TARGET_NET**, **CATEGORY_PLOT** tabs are available.
+Now the interface will look like this,
 
 ![f2](f2.png)
 
-The master table and the NOTE for the dataset will be displayed and the **VOLCANO_PLOT**,**TARGET_NET**, **CATEGORY_PLOT** tabs are active to use.  
+As shown above, the "NOTE" messages show the project name, main directory, the species name, analysis level, main ID type and the number of TF (transcription factors) and SIG (signalling factors). If the first selection is wrong, user can re-select everything and click **LOAD/RELOAD THE UPLOADED RDATA** button for reload.
 
-The NOTE message will display the project name, main directory, the species, analysis level, main id type, the number of TF (transcription factors) and SIG (signalling factors) and all comparisons in the master table. If some choice is wrong, user could modify the selection and reclick the **LOAD/RELOAD THE UPLOADED RDATA** button. 
+**About data uploading time.** It will take 3~4 seconds for the demo dataset to upload. If your target dataset is large but contains the ID conversion table, for example the RData size is about 120 MB, it will take 10~15 seconds for uploading. Otherwise it will take longer time to upload (20~40 seconds from test), because acquiring data from bioMart website takes time (varies from the internet speed).
 
-**NOTE**: It will take about 3~4 seconds for uploading the demo dataset. 
-If the original dataset is very large, for example the RData size is about 120 MB,  it will take about 10~15 seconds to upload the dataset if the original RData contains the ID transfer table. Otherwise, it will take longer for acquiring it from bioMart website (must with internet connection, about 10~20 seconds by testing). 
+## Navigate through the master table
 
-### Step 2: Navigate the master table for the dataset
+The bottom left of the interface displays the master table. User can search the whole table by keywords and sort columns by clicking the column names. The first four columns are freezed. 
 
-The bottomleft of the interface displays the master table for the dataset. User could search the whole dataset by keywords and sort each column by clicking the column names. 
-The first four columns are freezed as the `gene_label` is the human readable column for each driver, with `originalID_label` is the driver's name in original ID type. `geneSymbol` is the column for gene names in symbol with `originalID` is the original gene ID.
+- For one master table, it consists of three parts:
+  - The first six columns are `gene_label`, `geneSymbol`, `originalID`, `originalID_label`, `funcType` and `Size`.
+    - `gene_label` is the driver's gene symbol or transcript symbol, with suffix "_TF" or "_SIG" to show driver's type. 
+    - `geneSymbol` is the driver's gene symbol or transcript symbol, without suffix.
+    - `originalID` is the original ID type used in network construction, which should match the ID type in `analysis.par$cal.eset`, `analysis.par$DE`.
+    - `originalID_label` is the original ID type with suffix "_TF" or "_SIG", which should match the the ID type in `analysis.par$merge.network`, `analysis.par$merge.ac.eset`,`analysis.par$DA`.
+    - **`originalID_label`** is the only column to ensure unique ID for row record.
+    - `funcType` is either "TF" or "SIG" to mark driver's type. 
+    - `Size` is number of target genes for the driver. 
+  - The statistical columns are named as `prefix.comp_name_{DA or DE}`. The `prefix` can be `Z`, `P.Value`, `logFC` or `AveExpr` to indicate which statistical value is stored. The `comp_name` is the comparison name. For example, `Z.G4.Vs.WNT_DA` means the Z-statistics of the differential activity (DA) calculated from comparison between phenotype G4 and phenotype WNT. The color shade of the background indicated the significance of Z-statistics.
+  - The next 13 columns (from `ensembl_gene_id` to `refseq_mrna`) are detailed information of genes.
+  - The last columns (optional) are the detailed information of marker genes, users use `mark_strategy='add_column'` to set.
 
+## Plots
 
-## Plot part
+### VOLCANO_PLOT: quickly identify the top differentially expressed/activated drivers
 
-### VOLCANO_PLOT: Draw the Volcano plot to get the top differentiated expression/activity driver list
+The volcano plot is IMPORTANT in NetBIDshiny, because the activation of **NETBID_PLOT**, **GSEA_PLOT**, **HEATMAP**, **FUNCTION_ENRICH_PLOT** and **BUBBLE_PLOT** is highly dependent on that. If draw these plots without the activation of the volcano plot, a warning message will show up ("Please plot volcano plot first in order to choose the targeted comparison !"").
 
-Volcano plot is the only one necessary plot user need to draw in NetBIDshiny app, if not, **NETBID_PLOT**, **GSEA_PLOT**, **HEATMAP**, **FUNCTION_ENRICH_PLOT**, **BUBBLE_PLOT** will not be active for use (The warning message will be: Please plot volcano plot first in order to choose the targeted comparison !). As in one NetBID project, multiple comparisons could be included for analysis. Those plots will use the top driver list for display that need user pre-defined comparison as the sorting criteria. 
+Since the differential expression (DE)/activity (DA) statistics are calculated from certain comparisons, users need to choose which comparison to visualize. Users can also adjust the threshold for P-values, logFC and driver's target size.
 
-Here, we select `G4.Vs.others_DA` as the comparison want to focus in the following studies, better to choose the logFC column and P-value column correspondingly (if not, it will automatically change to the column related to the comparison) change the logFC threshold to 0.3 and P-value threshold to 1e-8, select the `Display significant items on plot?`, the interface will be:
-
-![f3](f3.png)
-
-**NOTE**: user could choose to save the figure by right click and save or click the **DOWNLOAD THE CURRENT PLOT** button and the plot will saved into a pdf file (**the following screen capture plots include the interface for the server and the downloaded pdf file**):
+Here, we selected `G4.Vs.others_DA` as the comparison, and chose the logFC column and P-value column (if not chosen, it will automatically change to the columns related to the comparison). Set the logFC threshold to 0.3, P-value threshold to 1e-8, minimum target size to 30 and maximum target size to 1000, and checked the `Display significant items on plot?` box. The plot created is shown as below,
 
 ![f4](f4.png)
 
-In the bottom, the message indicates that 48 drivers passed by the filter. User could try to further modify the parameters to get the top driver list. Once decided, user could choose to click **UPDATE THE MASTER TABLE BY USING THE PARAMETERS AND TOP NUMBER ABOVE**, and the interfact will be:
+At the bottom, the MESSAGE shows that 48 drivers have passed by the filter. User can modify the selections to get another top driver list. Click the **UPDATE THE MASTER TABLE BY USING THE PARAMETERS AND TOP NUMBER ABOVE** button after selection, the interface will look like this,
 
 ![f5](f5.png)
 
-Now, the note message will record the parameters used for filteration and the master table only contains 48 drivers passed the filter. User could click on the **LOAD/RELOAD THE UPLOADED RDATA** to recover into the original full dataset. 
+**NOTE:** In the **NETBID_PLOT**, **GSEA_PLOT**, **HEATMAP**, **FUNCTION_ENRICH_PLOT** and **BUBBLE_PLOT**, the top list is based on the ranking of the Z-statistics. If user only want the Z-statistics as the criteria to get the top driver list, it is not necessary to update the master table. Otherwise, the update step is necessary. (For example, if user only want to focus on drivers with target size ranges from 30 to 500, he need to set this filter and update the master table first). When user click the **UPDATE THE MASTER TABLE BY USING THE PARAMETERS AND TOP NUMBER ABOVE** button, he will need to re-do the valcano plot step to define the main comparison again. 
 
-**NOTE**: if user only want the Z-statistics as the criteria to get the top driver list, it is not necessary to update the master table. When user click the **UPDATE THE MASTER TABLE BY USING THE PARAMETERS AND TOP NUMBER ABOVE** button, he will need to re-do the valcano plot step to define the main comparison. 
-
-### NETBID_PLOT: Draw the NetBID plot to get the detailed statistics of the top differentiated expression/activity driver list
-
-Check multiple comparisons for DA and DE to display, and the final plot will be ordered by the focusing comparison (here G4.Vs. others_DA). The detailed display statistics could be chosen from "P.Value" and "logFC" for DE and DA independently. 
-Save or download the plot:
+### NETBID_PLOT: get the statistics of the top differentially expressed/activated drivers
 
 ![f6](f6.png)
 
-### GSEA_PLOT: Draw the GSEA plot to get the detailed information of the top differentiated activity driver list
-
-GSEA plot is another way to display the top driver list. The option is the same to call `draw.NetBID.GSEA()` function in NetBID2. User could check the manual for detailed description. Try the following options:
+### GSEA_PLOT: get the detailed statistics of the top differentially expressed/activated drivers
 
 ![f7](f7.png)
 
-Here, user could choose to only display the up or down-regulated drivers from the `choose the top strategy for selection`. 
-
-### HEATMAP: Draw the Heatmap to get the expression/activity pattern for the top driver list Vs. all samples
-
-Heatmap is also for the top driver visualization, it is focused on expression/activity pattern across all samples with sample category shown:
+### HEATMAP: get the expression/activity pattern of the top drivers across all samples
 
 ![f8](f8.png)
 
-### FUNCTION_ENRICH_PLOT: Draw the Function Enrichment plot to get the function annotation for the top driver list
+### FUNCTION_ENRICH_PLOT: get the functional annotation for the top drivers
 
-This plot is the functional analysis for the top drivers based on MSigDB annotation. User could choose multiple categories of gene sets and related statistics for calculation. If the main category is selected, no matter what is the selection condition for the sub-category, all gene sets in the main category will be used. For example, if user choose the 'C5:GO' category, all 'BP', 'MF', 'CC' will be used. 
+It uses the annotation from MSigDB database. User can choose multiple categories of gene sets and related statistics for calculation. As long as the main category is selected, all the gene sets from that category will be used, regardless of the selection of sub-category. For example, if user choose the 'C5:GO' main category, all 'BP', 'MF', 'CC' will be used. 
 
 ![f9](f9.png)
 
-### BUBBLE_PLOT: Draw the Bubble plot to get the function annotation for the top driver list and their target genes
+### BUBBLE_PLOT: get the functional annotation for the top drivers and their target genes
 
-This plot is the functional analysis for the target genes of the top drivers based on MSigDB annotation and will take some time in calculation (about several seconds). This plot will be very large size to visualize and strongly suggest user to download the figure:
+It uses the annotation from MSigDB database. The plot creation will take some time (around several seconds). The figure size could be very large and inconvenient to see. We suggest to download it as PDF.
 
 ![f10](f10.png)
 
-### TARGET_NET: Draw the Target Network plot to draw the sub-network structure for one selected driver
+### TARGET_NET: show the sub-network structure of one selected driver
 
-This plot is to visualize the sub-network structure for the selected driver or two drivers. User could try different target cex, number of layer to find a better visualization options:
+For a better visualization of this highly overlapped network structure, we offer the adjustment of text size `cex` and `number of layers`.
 
 ![f11](f11.png)
 
-If the second driver is not the same as the first one, it will generate two driver interaction plot:
+If add one more interested driver, it will draw a shared sub-network with overlapped target genes in the middle.
 
 ![f12](f12.png)
 
-### CATEGORY_BOXPLOT: Draw the Category box plot to get the expression/activity value distribution in each group of samples
+### CATEGORY_BOXPLOT: get the distribution of one driver's expression/activity value across group samples
 
-This plot is the box plot of activity/expression value across different category of samples, user could choose multiple categories at the same time:
+Users can choose which phenotype feature to display.
 
 ![f13](f13.png)
 

@@ -586,17 +586,18 @@ server <- function(input, output) {
       if(input$draw_category=='Expression for top drivers in the master table'){mat <- exprs(use_data$cal.eset);mat1 <- mat[ms_tab$originalID,];}
       display_row <- ms_tab[,input$label_col2]
       mat1 <- as.matrix(mat1)
-      #print(str(mat1))
+      print(str(mat1))
       rr <- 12;rc <- 12;
       if(is.null(input$row_cex)==FALSE) rr <- as.numeric(input$row_cex)
       if(is.null(input$col_cex)==FALSE) rc <- as.numeric(input$col_cex);
-      #print(rc);print(rr)
+      print(rc);print(rr)
       res1 <- draw.heatmap(mat=mat1,use_gene_label = display_row, phenotype_info = phe,use_phe = input$use_phe2,
                            show_row_names=input$show_row_names, show_column_names=input$show_column_names,
                            cluster_rows=input$cluster_rows, cluster_columns=input$cluster_columns,
                            row_names_gp=gpar(fontsize = rr),
                            column_names_gp=gpar(fontsize = rc),scale=input$scale,
-                           clustering_distance_rows=input$clustering_distance_rows,clustering_distance_columns=input$clustering_distance_columns)
+                           clustering_distance_rows=input$clustering_distance_rows,
+                           clustering_distance_columns=input$clustering_distance_columns)
     }
     if(control_para$doplot=='doCategoryBoxPlot'){ # 3
       use_data$plot_height <- as.numeric(input$plot_height3)
