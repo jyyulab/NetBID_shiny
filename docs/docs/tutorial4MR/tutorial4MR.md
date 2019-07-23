@@ -1,12 +1,12 @@
 ---
 title: "Tutorial for Master regulator estimation"
 layout: default
-nav_order: 2
+nav_order: 1
 permalink: ../docs/tutorial4MR
 has_children: no
 ---
 
-# Tutorial
+# Tutorial for Master regulator estimation
 
 The purpose of NetBIDshiny: 
 

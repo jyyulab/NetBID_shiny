@@ -6,7 +6,7 @@ permalink: ../docs/tutorial4Vis
 has_children: no
 ---
 
-# Tutorial
+# Tutorial for Visualization
 
 The purpose of NetBIDshiny: 
 
