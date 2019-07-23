@@ -1,10 +1,10 @@
 Package: NetBIDshiny
 Type: Package
-Title: A shiny app to visualize the NetBID results
+Title: A shiny app to assist NetBID2 master regulator analysis and visualize the results
 Version: 0.1.0
 Authors@R: person('Xinran', 'Dong', email = 'xinran.dong@stjude.org', role = c('aut', 'cre'))
 Maintainer@R: person('Xinran', 'Dong', email = 'xinran.dong@stjude.org')
-Description: A shiny app for NetBID2 (data-driven context-specific network and Bayesian inference, version II) visualization functions.
+Description: A shiny app for assisting NetBID2 (data-driven context-specific network and Bayesian inference, version II) analysis, including the master regulator estimation and result visualization.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
