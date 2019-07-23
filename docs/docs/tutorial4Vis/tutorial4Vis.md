@@ -1,5 +1,5 @@
 ---
-title: "Tutorial"
+title: "Tutorial for Visualization"
 layout: default
 nav_order: 2
 permalink: ../docs/tutorial4Vis
