@@ -21,7 +21,7 @@ We use the same demo data set as in NetBID2, from GEO database: [GSE116028](http
 
 - [Upload the eset Rdata and network data](#upload-the-eset-rdata-and-network-data)
 
-- [Select the options and start an analysis](#select_the_options_and_start_an_analysis)
+- [Select the options and start an analysis](#select-the-options-and-start-an-analysis)
 
 ---------
 
