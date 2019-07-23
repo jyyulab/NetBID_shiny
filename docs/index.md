@@ -29,17 +29,28 @@ NetBID2 is the upgraded second version of NetBID, which is a data-driven systems
 
 ### Dependencies
 
-R, version >= 3.4.0
+R, version >= 3.6.0
 
-NetBID2, version >= 0.1.1
+NetBID2, version >= 0.1.2
 
 ### Quick start: install R package (NetBIDshiny)
 
-- install the R package from github (not published yet)
+- install the R package from github
 
 ```R
 library(devtools)
-install_github("jyyulab/NetBID_shiny",ref='master')
+library(BiocManager)
+library(NetBID2)
+# set repos, for R version 3.6.0, Bioconductor version 3.9
+local({
+  r <- getOption("repos")
+  r["CRAN"] <- "https://cran.rstudio.com/"
+  r["BioCsoft"] <- "https://bioconductor.org/packages/3.9/bioc"
+  r["BioCann"] <- "https://bioconductor.org/packages/3.9/data/annotation"
+  r["BioCexp"] <- "https://bioconductor.org/packages/3.9/data/experiment"
+  options(repos = r)
+})
+install_github("jyyulab/NetBID_shiny",ref='master') 
 ```
 
 - OR, download the released source package from [NetBIDshiny_0.1.0.tar.gz](https://github.com/jyyulab/NetBID_shiny/releases/download/0.1.0/NetBIDshiny_0.1.0.tar.gz) and install locally
@@ -50,19 +61,21 @@ install.packages('NetBIDshiny_0.1.0.tar.gz',repos=NULL)
 
 ### Initiate the NetBIDShiny web app
 
-Call `run_NetBID_shiny()` to initiate the app.
+Call `NetBIDshiny.run4MR()` to initiate the app for master regulator identification or `NetBIDshiny.run4Vis()` to initiate the app for result visualization.
 
 ```R
 library(NetBIDshiny)
-run_NetBID_shiny()
+NetBIDshiny.run4Vis()
+NetBIDshiny.run4MR()
 ```
 
 Then open a browser and enter local url address (e.g: http://127.0.0.1:XXXX).
 
 
-### Online server
+### Online server (not available yet)
 
-The public online version of NetBIDshiny can be found here [XXX](XXX). This doesn't require the local installation.
+The public online version of NetBIDshiny can be found here [XXX](XXX). 
+This doesn't require the local installation.
 
 ---
 
@@ -74,7 +87,7 @@ The manual of all the NetBID2 functions is linked here [NetBIDshiny_0.1.0.pdf](h
  
 We choose the demo dataset from GEO database as in NetBID2: [GSE116028](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028). 
 
-Please check [Tutorial page](docs/tutorial) for more details.
+Please check [Tutorial for MR](docs/tutorial4MR) and [Tutorial for visualization](docs/tutorial4Vis) for more details.
 
 ---
 

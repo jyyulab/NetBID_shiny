@@ -1,7 +1,12 @@
 
-options(shiny.maxRequestSize = 500 * 1024 ^ 2) ## 500mb
 library(shinyjs)
 library(NetBID2)
+library(shinyFiles)
+library(fs)
+library(V8)
+
+options(shiny.maxRequestSize = 1000*1024^2) ##
+jscode <- "shinyjs.refresh = function() { history.go(0); }"
 
 server <- function(input, output) {
   ################
@@ -14,6 +19,7 @@ server <- function(input, output) {
   ################
   observeEvent(input$loadButton, { control_para$doloadData <- 'doinitialload'; use_data$choose_comp <- NULL; control_para$doplot=FALSE; use_data$use_para <- ''; use_data$ms_tab <- use_data$ori_ms_tab;})
   observeEvent(input$loadDemoButton, { control_para$doloadData <- 'doinitialdemoload'; use_data$choose_comp <- NULL; control_para$doplot=FALSE; use_data$use_para <- ''; use_data$ms_tab <- use_data$ori_ms_tab;})
+  observeEvent(input$initButton0, { js$refresh();control_para$doloadData <- FALSE; control_para$doplot <- FALSE;})
   observeEvent(input$doupdateMsTab, {
     control_para$doloadData <- 'doupdateMsTab';
     use_data$ms_tab <- use_data$tmp_ms_tab;
@@ -73,6 +79,7 @@ server <- function(input, output) {
     use_data$merge.ac.eset <- analysis.par$merge.ac.eset
     use_data$merge.network <- analysis.par$merge.network$target_list
     use_data$DE <- analysis.par$DE
+    use_data$DA <- analysis.par$DA
     all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
     all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
     use_data$all_comp <- all_comp
@@ -723,6 +730,7 @@ server <- function(input, output) {
       DE_list <- input$DE_list;
       choose_comp <- use_data$choose_comp
       choose_comp <- unique(gsub('(.*)_DA','\\1',choose_comp))
+      print(DA_list);print(names(DA))
       print(str(DA[DA_list])); print(str(DE[DE_list])); print(input$choose_comp)
       res1 <- draw.NetBID(DA_list = DA[DA_list], DE_list = DE[DE_list], main_id = choose_comp,
                           top_number = input$top_number8, DA_display_col = input$DA_display_col,
@@ -928,4 +936,331 @@ server <- function(input, output) {
   })
 }
 ##
+server_MR <- function(input, output,session){
+  #
+  volumes <- c( 'Current Directory'='.',Home = fs::path_home(), "R Installation" = R.home(),getVolumes()())
+  shinyFileChoose(input, "choose_tf_network_file", session = session,roots=volumes)
+  shinyFileChoose(input, "choose_sig_network_file",session = session,roots=volumes)
+  shinyFileChoose(input, "choose_eset_RData_file",session = session,roots=volumes)
+  shinyDirChoose(input, "project_main_dir", roots = volumes, session = session, restrictions = system.file(package = "base"))
+  #shinyFileSave(input, "save", roots = volumes, session = session, restrictions = system.file(package = "base"))
+  #
+  use_data <- reactiveValues(eset=NULL,tf_network_file=NULL,sig_network_file=NULL,
+                             project_main_dir='',project_name='',
+                             G0_name='',G1_name='',
+                             comp_name='',intgroup='',
+                             main_id_type='',cal.eset_main_id_type='',
+                             DE_strategy='',use_spe='',
+                             use_level='',pass=0,doQC=FALSE,doPLOT=FALSE,top_number=30)
+  control_para <- reactiveValues(doloadData = FALSE, doanalysis=FALSE,checkanalysis = FALSE) ## control parameters
+  observeEvent(input$loadButton, { control_para$doloadData <- 'doinitialload';})
+  observeEvent(input$loadDemoButton, { control_para$doloadData <- 'doinitialdemoload';})
+  observeEvent(input$doButton, { control_para$doanalysis <- TRUE;},once=FALSE,autoDestroy=FALSE)
+  observeEvent(input$initButton0, { js$refresh();control_para$doloadData <- FALSE; control_para$checkanalysis <- FALSE;control_para$doanalysis <- FALSE;})
+  output$filepaths_tf_network_file <- renderUI({
+      p(parseFilePaths(volumes, input$choose_tf_network_file)$datapath)
+  })
+  output$filepaths_sig_network_file <- renderUI({
+      p(parseFilePaths(volumes, input$choose_sig_network_file)$datapath)
+  })
+  output$filepaths_choose_eset_RData_file <- renderUI({
+      p(parseFilePaths(volumes, input$choose_eset_RData_file)$datapath)
+  })
+  loadData <- reactive({
+    output$error_message <- renderUI({p('')})
+    inFile <- input$eset_RData_file
+    print(inFile$datapath)
+    inFile1 <- list()
+    inFile1$datapath <- parseFilePaths(volumes,input$choose_eset_RData_file)$datapath
+    if(is.null(inFile$datapath)==TRUE & length(inFile1$datapath)==0) {
+      control_para$doloadData <- FALSE;
+      output$error_message <- renderUI({p('WARNING : NO upload or choose the RData file for the calculation eset, please check and re-try!')})
+      return()
+    }
+    if(is.null(inFile$datapath)==FALSE){
+      load(inFile$datapath)
+    }else{
+      load(inFile1$datapath)
+    }
+    #
+    all_obj <- ls()
+    all_obj_class <- lapply(all_obj,function(x)class(get(x)))
+    w1 <- unlist(lapply(all_obj_class,function(x)ifelse('ExpressionSet' %in% x,1,0))) ## find the first expression set object
+    w2 <- which(w1==1)[1]
+    if(length(w2)==0){
+      control_para$doloadData <- FALSE;
+      output$error_message <- renderUI({p('WARNING : NO ExpressionSet class object in the RData file, please check and re-try!')})
+      return()
+    }
+    use_data$eset <- get(all_obj[w2])
+    print(all_obj[w2])
+    print('Finish loading the dataset')
+    #
+    inFile_tf1 <- list(); inFile_sig1 <- list();
+    inFile_tf1$datapath  <- parseFilePaths(volumes,input$choose_tf_network_file)$datapath
+    inFile_sig1$datapath <- parseFilePaths(volumes,input$choose_sig_network_file)$datapath
+    inFile_tf  <- input$tf_network_file
+    inFile_sig <- input$sig_network_file
+    if(is.null(inFile_tf$datapath)==TRUE & length(inFile_tf1$datapath)==0){
+      control_para$doloadData <- FALSE;
+      output$error_message <- renderUI({p('WARNING : NO choose the TF network file, please check and re-try!')})
+      return()
+    }
+    if(is.null(inFile_sig$datapath)==TRUE & length(inFile_sig1$datapath)==0){
+      control_para$doloadData <- FALSE;
+      output$error_message <- renderUI({p('WARNING : NO choose the SIG network file, please check and re-try!')})
+      return()
+    }
+    if(is.null(inFile_tf$datapath)==FALSE){
+      use_data$tf_network_file <- inFile_tf$datapath
+    }else{
+      use_data$tf_network_file <- inFile_tf1$datapath
+    }
+    if(is.null(inFile_sig$datapath)==FALSE){
+      use_data$sig_network_file <- inFile_sig$datapath
+    }else{
+      use_data$sig_network_file <- inFile_sig1$datapath
+    }
+    print(use_data$tf_network_file)
+    print(use_data$sig_network_file)
+    print('Finish loading the network files')
+  })
+  
+  loadDemoData <- reactive({
+    use_dir <- sprintf('%s/inst/',getwd())
+    eset_demo_path <- sprintf('%s/demo1/demo_eset.Rdata',use_dir)
+    load(eset_demo_path)
+    use_data$eset <- eset
+    use_data$tf_network_file <- sprintf('%s/demo1/TF_consensus_network_ncol_.txt',use_dir)
+    use_data$sig_network_file <- sprintf('%s/demo1/SIG_consensus_network_ncol_.txt',use_dir)
+    print('Finish loading the demo dataset')
+  })
+  output$summaryProject<-renderUI({
+    if(control_para$doloadData==FALSE) return()
+    if(control_para$doloadData=='doinitialload') loadData()
+    if(control_para$doloadData=='doinitialdemoload') loadDemoData()
+    ms_tab <- use_data$ms_tab
+    all_comp <- use_data$all_comp
+    mess <- sprintf('')
+    HTML(mess)
+  })
+  output$dirpaths_project_main_dir <- renderUI({
+    p(sprintf("Output main directory:%s",parseDirPath(volumes,input$project_main_dir)),style='color:red')
+  })
+  output$analysisOption <- renderUI({
+    if(control_para$doloadData==FALSE) return()
+    all_id_type <- c('external_gene_name','ensembl_gene_id','ensembl_gene_id_version','ensembl_transcript_id','ensembl_transcript_id_version',
+                     'refseq_mrna','hgnc_symbol','entrezgene','ucsc','uniprotswissprot','other')
+    from_type <- 'external_gene_name'
+    eset <- use_data$eset
+    phe  <- pData(eset)
+    all_int <- get_int_group(eset)
+    if(is.null(input$intgroup)==FALSE){
+      sel_int <- input$intgroup
+      all_g   <- unique(phe[,sel_int])
+      g1 <- unique(phe[,sel_int])[1]
+      g2 <- unique(phe[,sel_int])[2]
+    } else{
+      sel_int <- all_int[1]
+      all_g   <- unique(phe[,sel_int])
+      g1 <- unique(phe[,sel_int])[1]
+      g2 <- unique(phe[,sel_int])[2]
+    } 
+    all_g1 <- all_g
+    if(is.null(input$G1_name)==FALSE){
+      g1 <- input$G1_name
+      g2 <- input$G0_name
+    }
+    all_g2 <- c(setdiff(all_g,g1),paste0('Non-',all_g))
+    comp_name <- sprintf('%s Vs. %s',g1,g2)
+    tagList(
+      fluidRow(
+        column(4,offset=0,selectInput(inputId='intgroup',label='Select the interested sample group for analysis',
+                                      choices=all_int,selected = sel_int)),
+        column(4,offset=0,selectInput(inputId='G1_name',label='Select type for the case group',
+                                      choices=all_g1,selected = g1)),
+        column(4,offset=0,selectInput(inputId='G0_name',label='Select type for the control group',
+                                      choices=all_g2,selected = g2))
+      ),
+      fluidRow(
+        column(4,offset=0,textInput(inputId='comp_name',label='Input the comparison name',value=comp_name)),
+        column(4,offset=0,selectInput(inputId='DE_strategy',label='Choose the analysis strategy',
+                                      choices=c('limma','bid'),selected = 'limma')),
+        column(4,offset=0,selectInput(inputId='use_spe',label='Choose the species',choices=c('human','mouse'),
+                                      selected = 'human'))
+      ),     
+      fluidRow(
+        column(4,offset=0,selectInput(inputId='use_level',label='Choose the ID level for the network',
+                                      choices=c('gene','transcript'),selected = 'gene')),
+        column(4,offset=0,selectInput(inputId='cal.eset_main_id_type',label='Choose the main id type for the calculation dataset',
+                                      choices=all_id_type,selected =from_type)),
+        column(4,offset=0,selectInput(inputId='main_id_type',label='Choose the main id type for the network files',
+                                      choices=all_id_type,selected =from_type))
+      ),
+      fluidRow(
+        column(4,offset=0,shinyDirButton(id='project_main_dir',label='Choose main output directory for the project',
+                                         title='Please choose the directory of the project for saving the output')),
+        column(4,offset=0,htmlOutput('dirpaths_project_main_dir')),
+        column(4,offset=0,textInput(inputId='project_name',label='Project name',value=''))
+      ),hr(),
+      HTML('<p><b>More options:</b></p>'),
+      p('Mainly for automatically visualization plot generation for top drivers (Rank by P-value, no filteration for logFC and P-value), 
+        more flexible choice is to use another app in this package by \'NetBIDshiny.run4Vis()\' and load in the RData generated in the output directory.'),
+      fluidRow(
+        column(4,offset=0,checkboxInput(inputId='doQC',label='Do QC plot for the network and activity eSet (which will take time) ?',value = FALSE)),
+        column(4,offset=0,checkboxInput(inputId='doPLOT',label='Do plot for the top drivers (which will take time) ?',value = FALSE)),
+        column(4,offset=0,numericInput(inputId='top_number',label='Number of top drivers for plotting ?',value = 30,min=10,step=1))
+      ),hr()
+    )
+  })
+  output$checkReturn <- renderUI({
+    if(control_para$doloadData==FALSE) return()
+  #  if(control_para$checkanalysis==FALSE) return()
+    j1 <- class(input$project_main_dir)[1]
+    #print(j1)
+    if(j1!='list'){
+      #control_para$doanalysis <- FALSE
+      return(p('WARNING : No selection for the project main directory!',style='color:red;font-size:120%'))
+    }
+    j2 <- input$project_name
+    #print(j2)
+    if(j2==''){
+      #control_para$doanalysis <- FALSE
+      return(p('WARNING : No input for the project name !',style='color:red;font-size:120%'))
+    }
+    project_main_dir <- parseDirPath(volumes,input$project_main_dir)
+    project_name <- input$project_name
+    use_data$project_main_dir <- project_main_dir
+    use_data$project_name <- project_name
+    use_data$G0_name <- input$G0_name
+    use_data$G1_name <- input$G1_name
+    use_data$comp_name <- input$comp_name
+    use_data$intgroup <- input$intgroup
+    use_data$main_id_type <- input$main_id_type
+    use_data$cal.eset_main_id_type <- input$cal.eset_main_id_type
+    use_data$DE_strategy <- input$DE_strategy
+    use_data$use_spe <- input$use_spe
+    use_data$use_level <- input$use_level
+    use_data$pass <- 1
+    use_data$doQC <- input$doQC
+    use_data$doPLOT <- input$doPLOT
+    use_data$top_number <- input$top_number
+    return(tagList(
+      h4('Check the options below:'),
+      HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
+      HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
+      HTML(sprintf('<p>Main species:<b>%s</b></p>',use_data$use_spe)),
+      HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
+      HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
+                use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
+      HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
+      HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
+      hr(),
+      fluidRow(
+        column(4,offset=0,HTML('<p style=\'color:red\'>Click the right button if everything is correct ! <br> And stay at the page until the below message update !</p>')),
+        column(4,offset=0,actionButton(inputId='doButton',label='Start the driver estimation analysis'))
+      ),hr()
+    ))
+  })
+  output$analysisReturn <- renderUI({
+    if(control_para$doloadData==FALSE) return()
+   # if(control_para$checkanalysis==FALSE) return()
+    if(use_data$pass==0) return(tagList(h4('Result message:'),p('Input option missing !')))
+    if(control_para$doanalysis==FALSE) return(tagList(h4('Result message:'),p('Haven\'t started yet !')))
+    output$analysisOption <- renderUI({})
+    output$checkReturn <- renderUI({})
+    db.preload(use_spe=use_data$use_spe,use_level=use_data$use_level)
+    project_main_dir <- use_data$project_main_dir
+    project_name <- use_data$project_name
+    G0_name <- use_data$G0_name
+    print(G0_name)
+    G0_name_mod <- gsub('Non-','',G0_name)
+    eset <- use_data$eset
+    intgroup <- use_data$intgroup
+    if(G0_name_mod!=G0_name){
+      phe1 <- pData(eset)
+      w1 <- phe1[,intgroup]
+      w1[which(w1!=G0_name_mod)] <- G0_name
+      phe1[,intgroup] <- w1
+      pData(eset) <- phe1
+    }
+    withProgress(message='processing',value=0.3,{
+      if(use_data$doPLOT==TRUE){
+        incProgress(0.5, detail = 'Start calculating')
+        analysis.par <- NetBID.lazyMode.DriverEstimation(project_main_dir = project_main_dir,
+                                                         project_name = project_name, 
+                                                         tf.network.file = use_data$tf_network_file,
+                                                         sig.network.file = use_data$sig_network_file, cal.eset = eset, 
+                                                         main_id_type = use_data$main_id_type,
+                                                         cal.eset_main_id_type = use_data$cal.eset_main_id_type, 
+                                                         use_level = use_data$use_level,
+                                                         transfer_tab = NULL, 
+                                                         intgroup = use_data$intgroup, G1_name = use_data$G1_name,
+                                                         G0_name = use_data$G0_name, comp_name = use_data$comp_name, do.QC = use_data$doQC,
+                                                         DE_strategy = use_data$DE_strategy, return_analysis.par = TRUE)
+        incProgress(0.8, detail = 'Start plotting for top drivers')
+        if(use_data$use_spe=='human') gs.preload(use_spe='Homo sapiens')
+        if(use_data$use_spe=='mouse') gs.preload(use_spe='Mus musculus')
+        res1 <- NetBID.lazyMode.DriverVisualization(analysis.par=analysis.par,intgroup=use_data$intgroup,use_comp=use_data$comp_name,
+                                                    main_id_type=use_data$main_id_type,top_number=use_data$top_number,
+                                                    logFC_thre = 0, Pv_thre = 1)
+      }else{
+        incProgress(0.5, detail = 'Start calculating')
+        analysis.par <- NetBID.lazyMode.DriverEstimation(project_main_dir = project_main_dir,
+                                                         project_name = project_name, 
+                                                         tf.network.file = use_data$tf_network_file,
+                                                         sig.network.file = use_data$sig_network_file, cal.eset = eset, 
+                                                         main_id_type = use_data$main_id_type,
+                                                         cal.eset_main_id_type = use_data$cal.eset_main_id_type, 
+                                                         use_level = use_data$use_level,
+                                                         transfer_tab = NULL, 
+                                                         intgroup = use_data$intgroup, G1_name = use_data$G1_name,
+                                                         G0_name = use_data$G0_name, comp_name = use_data$comp_name, do.QC = use_data$doQC,
+                                                         DE_strategy = use_data$DE_strategy, return_analysis.par = FALSE)
+      }
+    })
+    output_README_file <- sprintf('%s/%s/README_%s_%s.txt',project_main_dir,project_name,project_name,use_data$comp_name)
+    information <- sprintf('Analysis Date:%s\nProject main directory:%s\nProject name:%s\nMain species:%s\nThe case group name :%s\nThe control group name :%s\nThe comparison name:%s\nThe ID level is at %s\nThe main ID type for the network files:%s\nThe main ID type for the calculate eset:%s\nAnalysis strategy:%s',
+                           format(Sys.time(), "%a %b %d %H:%M:%S %Y"),
+                           project_main_dir,project_name,use_data$use_spe,use_data$G1_name,use_data$G0_name,use_data$comp_name,
+                           use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type,use_data$DE_strategy)
+    write.table(information,file=output_README_file,quote=F,row.names=F,col.names=F)
+    if(use_data$doPLOT==TRUE){
+      return(tagList(h4('Result message:'),
+                     HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
+                     HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
+                     HTML(sprintf('<p>Main species:<b>%s</b></p>',use_data$use_spe)),
+                     HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
+                     HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
+                                  use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
+                     HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
+                     HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
+                     HTML(sprintf('<p style=\'color:red;\'>Finish ! Check Master table excel file in %s/%s/DATA/%s_ms_tab.xlsx <br> 
+                                  RData file in %s/%s/DATA/analysis.par.Step.ms-tab.RData</p>',
+                                  project_main_dir,project_name,project_name,project_main_dir,project_name)),
+                     HTML(sprintf('<p style=\'color:red;\'>Plot for top drivers in %s/%s/PLOT/',
+                                  project_main_dir,project_name)),
+                     HTML('<p>Please click the Refresh button to start another analysis!</p>')))
+    }else{
+      return(tagList(h4('Result message:'),
+                     HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
+                     HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
+                     HTML(sprintf('<p>Main species:<b>%s</b></p>',use_data$use_spe)),
+                     HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
+                     HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
+                                  use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
+                     HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
+                     HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
+                     HTML(sprintf('<p style=\'color:red;\'>Finish ! Check Master table excel file in %s/%s/DATA/%s_ms_tab.xlsx <br> 
+                                  RData file in %s/%s/DATA/analysis.par.Step.ms-tab.RData</p>',
+                                  project_main_dir,project_name,project_name,project_main_dir,project_name)),
+                     HTML('<p>Please click the Refresh button to start another analysis!</p>')))
+    }
+  })
+}
+
+
+
+
+
 

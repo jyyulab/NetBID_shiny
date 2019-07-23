@@ -1,2 +1,3 @@
 library(NetBIDshiny)
-run_NetBID_shiny()
+NetBIDshiny.run4Vis()
+NetBIDshiny.run4MR()

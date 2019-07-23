@@ -208,6 +208,8 @@ Then, please choose:</p>
 </span><span class="n">listAttributes</span><span class="p">(</span><span class="n">ensembl</span><span class="p">)</span><span class="w">
 </span></code></pre></div></div>
 
+<p>If there is an error message <strong>maximum upload size exceeded</strong>, please set <code class="highlighter-rouge">options(shiny.maxRequestSize = 300*1024^2)</code> to a larger number. Here the options means the maximum request size is 300mb.</p>
+
 <p>Then click the <strong>LOAD/RELOAD THE UPLOADED RDATA</strong> button to load the target RData. For demo RData, user can directly click the <strong>LOAD/RELOAD THE DEMO RDATA</strong> button.
 After the upload of the targe RData, the master table and the “NOTE” messages will be displayed. And the <strong>VOLCANO_PLOT</strong>,<strong>TARGET_NET</strong>, <strong>CATEGORY_PLOT</strong> tabs are available.
 Now the interface will look like this,</p>

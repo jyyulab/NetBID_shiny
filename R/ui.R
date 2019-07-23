@@ -1,9 +1,11 @@
 library(shiny)
 library(shinythemes)
+library(shinyFiles)
 
 ui <- fluidPage(
+  useShinyjs(),extendShinyjs(text = jscode),
   theme = shinytheme("sandstone"),
-  titlePanel('NetBIDShiny'),
+  titlePanel('NetBIDShiny for result visualization'),
   sidebarPanel(width=5,
            h4('Upload the dataset',style='text-align:left'),
            fileInput('ms_tab_RData_file',label='choose master table RData file',accept=c('.Rds','.RData','.Rdata')),
@@ -14,9 +16,10 @@ ui <- fluidPage(
              column(4,offset=1,actionButton('loadDemoButton', 'Load/Reload the Demo RData'))
            ),
            hr(),
-           div(htmlOutput('error_message'),style='font-color:red'),
+           div(htmlOutput('error_message'),style='color:red'),
            div(uiOutput("masterTable.ui")),
-           div(fluidRow(column(12,div(DT::dataTableOutput("ms_table"), style = "font-size:70%"))))
+           div(fluidRow(column(12,div(DT::dataTableOutput("ms_table"), style = "font-size:70%")))),
+           actionButton(inputId='initButton0',label='Refresh the app',style='width:100%;color:blue;background:white')
   ),
   mainPanel(width=7,
       h4('Choose plot type and input parameters',style='text-align:left'),
@@ -33,7 +36,64 @@ ui <- fluidPage(
                        ),
       div(uiOutput("plot.ui")),
       div(htmlOutput('addtionalPerformance'))
-  )
+  ),
+  tags$style(type = 'text/css', 
+             "footer{text-align:center;position: absolute; bottom:0; width:100%;padding:5px;z-index: 1000;}"
+  ),
+  HTML("<footer><hr></hr><p>© 2019 St. Jude Children\'s Research Hospital</p>
+       <p>Contact: <a href='https://stjuderesearch.org/site/lab/yu/contact',target='_'>YuLab</a> <a href='https://github.com/jyyulab/NetBID_shiny',target='_'>Github</a></p>
+       <p>Email: xinran.dong@stjude.org or sherrymary0911@gmail.com</p></footer>")
 )
 #
+ui_MR <- fluidPage(
+  useShinyjs(),extendShinyjs(text = jscode),
+  theme = shinytheme("sandstone"),
+  titlePanel('NetBIDShiny for master regulator estimation'),
+  sidebarPanel(width=5,
+               h3('Upload or choose the files for calculation'),hr(),
+               h4('1. Upload the calculation dataset',style='text-align:left'),
+               p('NOTE: For preparation, user could use functions such as load.exp.GEO(), load.exp.RNASeq.demoSalmon(), generate.eset() in NetBID2 to generate ExpressionSet class object and save into RData file!'),
+               fileInput('eset_RData_file',label='choose RData file containing the ExpressionSet class object',accept=c('.Rds','.RData','.Rdata','.eset')),
+               h4('OR choose the local calculation dataset file',style='text-align:left'),
+               shinyFilesButton('choose_eset_RData_file', 'choose the RData file containing the ExpressionSet class object', 
+                                'choose the RData file containing the ExpressionSet class object', FALSE),
+               htmlOutput('filepaths_choose_eset_RData_file'),
+               hr(),
+               h4('2. Upload the network files from SJAracne output',style='text-align:left'),
+               fileInput('tf_network_file',label='choose the TF network file',accept=c('.txt')),
+               fileInput('sig_network_file',label='choose the SIG network file',accept=c('.txt')),
+               h4('OR choose the local network files',style='text-align:left'),
+               fluidRow(
+                 column(4,offset=1,shinyFilesButton('choose_tf_network_file', 'choose the TF network file', 'choose the TF network file', FALSE)),
+                 column(4,offset=1,shinyFilesButton('choose_sig_network_file', 'choose the SIG network file', 'choose the SIG network file', FALSE))
+               ),
+               fluidRow(
+                 column(4,offset=1,htmlOutput('filepaths_tf_network_file')),
+                 column(4,offset=1,htmlOutput('filepaths_sig_network_file'))
+               ),
+               hr(),
+               h4('3. Click the button to upload the files'),
+               actionButton('loadButton', 'Load the Data'),
+               hr(),
+               p('Click the load demo button to check the usage'),
+               actionButton('loadDemoButton', 'Load the Demo Data',style="height:80%;font-size:80%;background:grey"),
+               hr(),
+               actionButton(inputId='initButton0',label='Refresh the app',style='width:100%;color:blue;background:white'),hr(),
+               div(htmlOutput('error_message'),style="font-size:120%;color:red")
+  ),
+  mainPanel(width=7,
+            h3('Select the options for the uploaded dataset',style='text-align:left'),
+            div(htmlOutput('summaryProject')),hr(),
+            div(htmlOutput('analysisOption')),
+            div(htmlOutput('checkReturn')),
+            div(htmlOutput('analysisReturn'))
+  ),
+  tags$style(type = 'text/css', 
+             "footer{text-align:center;position: absolute; bottom:0; width:100%;padding:5px;z-index: 1000;}"
+  ),
+  HTML("<footer><hr></hr><p>© 2019 St. Jude Children\'s Research Hospital</p>
+               <p>Contact: <a href='https://stjuderesearch.org/site/lab/yu/contact',target='_'>YuLab</a> <a href='https://github.com/jyyulab/NetBID_shiny',target='_'>Github</a></p>
+       <p>Email: xinran.dong@stjude.org or sherrymary0911@gmail.com</p></footer>")
+)
+
 
