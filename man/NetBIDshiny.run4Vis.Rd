@@ -4,10 +4,16 @@
 \alias{NetBIDshiny.run4Vis}
 \title{\code{NetBIDshiny.run4Vis} is a function to run a shiny app for NetBID2 result visualization.}
 \usage{
-NetBIDshiny.run4Vis()
+NetBIDshiny.run4Vis(search_path = c("Current Directory", "Home"))
+}
+\arguments{
+\item{search_path}{a vector of characters, path for master table Rdata searching in the app server. 
+User could choose from: 'Current Directory','Home','R Installation','Available Volumes', 
+and could put user-defined server path (better use absolute path).
+Default is c('Current Directory','Home').
+If set to NULL, only 'Current Directory' will be used.}
 }
 \description{
 \code{NetBIDshiny.run4Vis} is a shiny app for NetBID2 result visualization. 
-No option is required. 
 User could follow the online tutorial \url{https://jyyulab.github.io/NetBID_shiny/} for usage.
 }

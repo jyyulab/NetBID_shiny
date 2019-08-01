@@ -1,6 +1,12 @@
 library(shiny)
+library(shinyjs)
 library(shinythemes)
+library(DT)
+library(NetBID2)
 library(shinyFiles)
+library(fs)
+library(V8)
+library(zip)
 
 ui <- fluidPage(
   useShinyjs(),extendShinyjs(text = jscode),
@@ -9,56 +15,57 @@ ui <- fluidPage(
   sidebarPanel(width=5,
            h4('Upload the dataset',style='text-align:left'),
            fileInput('ms_tab_RData_file',label='choose master table RData file',accept=c('.Rds','.RData','.Rdata')),
-           div(htmlOutput('summaryProject')),  hr(),
-           div(htmlOutput('initial_para'),style='font-size:80%'),  hr(),
+           h4('OR choose the local master table RData file',style='text-align:left'),
+           shinyFilesButton('choose_ms_tab_RData_file', 'choose the master table RData file', 
+                            'choose the RData file containing the master table', FALSE),
+           shiny::htmlOutput('filepaths_choose_ms_tab_RData_file'),
+           div(shiny::htmlOutput('summaryProject')),  shiny::hr(),
+           div(shiny::htmlOutput('initial_para'),style='font-size:80%'),  shiny::hr(),
            fluidRow(
              column(4,offset=1,actionButton('loadButton', 'Load/Reload the uploaded RData')),
              column(4,offset=1,actionButton('loadDemoButton', 'Load/Reload the Demo RData'))
            ),
-           hr(),
-           div(htmlOutput('error_message'),style='color:red'),
+           shiny::hr(),
+           div(shiny::htmlOutput('error_message'),style='color:red'),
            div(uiOutput("masterTable.ui")),
-           div(fluidRow(column(12,div(DT::dataTableOutput("ms_table"), style = "font-size:70%")))),
+           div(fluidRow(column(12,div(DT::dataTableOutput("ms_table"), style = "font-size:70%")))),shiny::hr(),
            actionButton(inputId='initButton0',label='Refresh the app',style='width:100%;color:blue;background:white')
   ),
   mainPanel(width=7,
       h4('Choose plot type and input parameters',style='text-align:left'),
       tabsetPanel(type = "tabs",selected='Volcano_Plot',
-                         tabPanel("Volcano_Plot", div(htmlOutput("VolcanoPlot_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("NetBID_Plot", div(htmlOutput("NetBIDPlot_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("GSEA_Plot", div(htmlOutput("GSEAPlot_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("Heatmap", div(htmlOutput("Heatmap_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("Function_Enrich_Plot", div(htmlOutput("FunctionEnrichPlot_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("Bubble_Plot", div(htmlOutput("BubblePlot_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("Target_Net", div(htmlOutput("TargetNetPlot_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("Category_BoxPlot", div(htmlOutput("CategoryBoxPlot_para"),style = "font-size:80%;margin-top:2%")),
-                         tabPanel("About", div(htmlOutput("about.ui"),style = "font-size:80%;margin-top:2%"))
+                         tabPanel("Volcano_Plot", div(shiny::htmlOutput("VolcanoPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("NetBID_Plot", div(shiny::htmlOutput("NetBIDPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("GSEA_Plot", div(shiny::htmlOutput("GSEAPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("Heatmap", div(shiny::htmlOutput("Heatmap_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("Function_Enrich_Plot", div(shiny::htmlOutput("FunctionEnrichPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("Bubble_Plot", div(shiny::htmlOutput("BubblePlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("Target_Net", div(shiny::htmlOutput("TargetNetPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("Category_BoxPlot", div(shiny::htmlOutput("CategoryBoxPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("About", div(shiny::htmlOutput("about.ui"),style = "font-size:80%;margin-top:2%"))
                        ),
       div(uiOutput("plot.ui")),
-      div(htmlOutput('addtionalPerformance'))
+      div(shiny::htmlOutput('addtionalPerformance'))
   ),
   tags$style(type = 'text/css', 
              "footer{text-align:center;position: absolute; bottom:0; width:100%;padding:5px;z-index: 1000;}"
-  ),
-  HTML("<footer><hr></hr><p>© 2019 St. Jude Children\'s Research Hospital</p>
-       <p>Contact: <a href='https://stjuderesearch.org/site/lab/yu/contact',target='_'>YuLab</a> <a href='https://github.com/jyyulab/NetBID_shiny',target='_'>Github</a></p>
-       <p>Email: xinran.dong@stjude.org or sherrymary0911@gmail.com</p></footer>")
+  )
 )
 #
 ui_MR <- fluidPage(
   useShinyjs(),extendShinyjs(text = jscode),
   theme = shinytheme("sandstone"),
-  titlePanel('NetBIDShiny for master regulator estimation'),
+  titlePanel('NetBIDShiny for hidden driver estimation'),
   sidebarPanel(width=5,
-               h3('Upload or choose the files for calculation'),hr(),
+               h3('Upload or choose the files for calculation'),shiny::hr(),
                h4('1. Upload the calculation dataset',style='text-align:left'),
-               p('NOTE: For preparation, user could use functions such as load.exp.GEO(), load.exp.RNASeq.demoSalmon(), generate.eset() in NetBID2 to generate ExpressionSet class object and save into RData file!'),
+               shiny::p('NOTE: For preparation, user could use functions such as load.exp.GEO(), load.exp.RNASeq.demoSalmon(), generate.eset() in NetBID2 to generate ExpressionSet class object and save into RData file!'),
                fileInput('eset_RData_file',label='choose RData file containing the ExpressionSet class object',accept=c('.Rds','.RData','.Rdata','.eset')),
                h4('OR choose the local calculation dataset file',style='text-align:left'),
                shinyFilesButton('choose_eset_RData_file', 'choose the RData file containing the ExpressionSet class object', 
                                 'choose the RData file containing the ExpressionSet class object', FALSE),
-               htmlOutput('filepaths_choose_eset_RData_file'),
-               hr(),
+               shiny::htmlOutput('filepaths_choose_eset_RData_file'),
+               shiny::hr(),
                h4('2. Upload the network files from SJAracne output',style='text-align:left'),
                fileInput('tf_network_file',label='choose the TF network file',accept=c('.txt')),
                fileInput('sig_network_file',label='choose the SIG network file',accept=c('.txt')),
@@ -68,32 +75,32 @@ ui_MR <- fluidPage(
                  column(4,offset=1,shinyFilesButton('choose_sig_network_file', 'choose the SIG network file', 'choose the SIG network file', FALSE))
                ),
                fluidRow(
-                 column(4,offset=1,htmlOutput('filepaths_tf_network_file')),
-                 column(4,offset=1,htmlOutput('filepaths_sig_network_file'))
+                 column(4,offset=1,shiny::htmlOutput('filepaths_tf_network_file')),
+                 column(4,offset=1,shiny::htmlOutput('filepaths_sig_network_file'))
                ),
-               hr(),
+               shiny::hr(),
                h4('3. Click the button to upload the files'),
                actionButton('loadButton', 'Load the Data'),
-               hr(),
-               p('Click the load demo button to check the usage'),
+               shiny::hr(),
+               shiny::p('Click the load demo button to check the usage'),
                actionButton('loadDemoButton', 'Load the Demo Data',style="height:80%;font-size:80%;background:grey"),
-               hr(),
-               actionButton(inputId='initButton0',label='Refresh the app',style='width:100%;color:blue;background:white'),hr(),
-               div(htmlOutput('error_message'),style="font-size:120%;color:red")
+               shiny::hr(),
+               actionButton(inputId='initButton0',label='Refresh the app',style='width:100%;color:blue;background:white'),shiny::hr(),
+               div(shiny::htmlOutput('error_message'),style="font-size:120%;color:red")
   ),
   mainPanel(width=7,
             h3('Select the options for the uploaded dataset',style='text-align:left'),
-            div(htmlOutput('summaryProject')),hr(),
-            div(htmlOutput('analysisOption')),
-            div(htmlOutput('checkReturn')),
-            div(htmlOutput('analysisReturn'))
+            div(shiny::htmlOutput('summaryProject')),shiny::hr(),
+            div(shiny::htmlOutput('analysisOption')),
+            div(shiny::htmlOutput('checkReturn')),
+            div(shiny::htmlOutput('analysisReturn'))
   ),
   tags$style(type = 'text/css', 
              "footer{text-align:center;position: absolute; bottom:0; width:100%;padding:5px;z-index: 1000;}"
   ),
-  HTML("<footer><hr></hr><p>© 2019 St. Jude Children\'s Research Hospital</p>
+  shiny::HTML("<footer><hr></hr><p>\u00A9 2019 St. Jude Children\'s Research Hospital</p>
                <p>Contact: <a href='https://stjuderesearch.org/site/lab/yu/contact',target='_'>YuLab</a> <a href='https://github.com/jyyulab/NetBID_shiny',target='_'>Github</a></p>
-       <p>Email: xinran.dong@stjude.org or sherrymary0911@gmail.com</p></footer>")
+       <p>Email: xinran.dong@stjude.org or xinran.dong@foxmail.com</p></footer>")
 )
 
 

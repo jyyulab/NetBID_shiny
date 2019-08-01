@@ -4,12 +4,23 @@
 \alias{NetBIDshiny.run4MR}
 \title{\code{NetBIDshiny.run4MR} is a function to run a shiny app for NetBID2 master regulator identification.}
 \usage{
-NetBIDshiny.run4MR()
+NetBIDshiny.run4MR(search_path = c("Current Directory", "Home"),
+  project_main_dir = NULL)
+}
+\arguments{
+\item{search_path}{a vector of characters, path for network data and expressionSet class RData searching in the app server. 
+User could choose from: 'Current Directory','Home','R Installation','Available Volumes', 
+and could put user-defined server path (better use absolute path).
+Default is c('Current Directory','Home').
+If set to NULL, only 'Current Directory' will be used.}
+
+\item{project_main_dir}{character, absolute path of the main working directory for driver analysis.
+If NULL, the server will add a new button for user to select the output directory. Default is NULL.
+If not NULL, there will be an additional link in the result page for downloading the zip file containing all information.}
 }
 \description{
 \code{NetBIDshiny.run4MR} is a shiny app for NetBID2 master regulator 
 identification and the generation of figures for top drivers with the help of two lazy functions in NetBID2,
 NetBID.lazyMode.DriverEstimation() and NetBID.lazyMode.DriverVisualization(). 
-No option is required. 
 User could follow the online tutorial \url{https://jyyulab.github.io/NetBID_shiny/} for usage.
 }
