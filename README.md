@@ -27,7 +27,9 @@ Download the R package from https://github.com/jyyulab/NetBID_shiny/releases/dow
 
 download the directory to your workspace and then run:
 
-devtools::install(pkg='.') ## please input the path to the directory
+```
+devtools::install_local('NetBIDshiny_0.1.0.tar.gz') ## path 
+```
 
 # Manual & Tutorial
 
