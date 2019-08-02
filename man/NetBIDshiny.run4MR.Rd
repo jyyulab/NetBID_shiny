@@ -4,11 +4,18 @@
 \alias{NetBIDshiny.run4MR}
 \title{\code{NetBIDshiny.run4MR} is a function to run a shiny app for NetBID2 master regulator identification.}
 \usage{
-NetBIDshiny.run4MR(search_path = c("Current Directory", "Home"),
+NetBIDshiny.run4MR(search_network_path = c("Current Directory", "Home"),
+  search_eSet_path = c("Current Directory", "Home"),
   project_main_dir = NULL)
 }
 \arguments{
-\item{search_path}{a vector of characters, path for network data and expressionSet class RData searching in the app server. 
+\item{search_network_path}{a vector of characters, path for network data searching in the app server. 
+User could choose from: 'Current Directory','Home','R Installation','Available Volumes', 
+and could put user-defined server path (better use absolute path).
+Default is c('Current Directory','Home').
+If set to NULL, only 'Current Directory' will be used.}
+
+\item{search_eSet_path}{a vector of characters, path for expressionSet class RData searching in the app server. 
 User could choose from: 'Current Directory','Home','R Installation','Available Volumes', 
 and could put user-defined server path (better use absolute path).
 Default is c('Current Directory','Home').

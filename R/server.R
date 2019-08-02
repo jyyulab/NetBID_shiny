@@ -12,7 +12,7 @@ library(zip)
 options(shiny.maxRequestSize = 1000*1024^2) ##
 jscode <- "shinyjs.refresh = function() { history.go(0); }"
 
-server <- function(input, output,session) {
+server_Vis <- function(input, output,session) {
   ################
   use_data <- shiny::reactiveValues(ori_ms_tab=NULL,ms_tab=NULL,tmp_ms_tab=NULL,use_para='',basic_info='',
                              project.name=NULL,main.dir=NULL,
@@ -970,22 +970,38 @@ server <- function(input, output,session) {
 }
 ##
 server_MR <- function(input, output,session){
-  search_path <- unique(setdiff(unique(search_path),''))
-  if(is.null(search_path)==FALSE & length(search_path)>0){
+  #
+  search_network_path <- unique(setdiff(unique(search_network_path),''))
+  if(is.null(search_network_path)==FALSE & length(search_network_path)>0){
     pre_path_id <- c('Current Directory','Home','R Installation','Available Volumes')
-    w1 <- setdiff(intersect(search_path,pre_path_id),'Available Volumes')
-    w2 <- setdiff(search_path,pre_path_id)
+    w1 <- setdiff(intersect(search_network_path,pre_path_id),'Available Volumes')
+    w2 <- setdiff(search_network_path,pre_path_id)
     if(length(w1)>0) volumes_w1 <- c( 'Current Directory'='.',Home = fs::path_home(), "R Installation" = R.home())[w1] else volumes_w1 <- NULL
     if(length(w2)>0){volumes_w2 <- w2; if(is.null(names(volumes_w2))==TRUE){names(volumes_w2)<-sprintf('User Path %s',1:length(w2))}}else{volumes_w2 <- NULL}
-    if('Available Volumes' %in% search_path) volumes_w3 <- getVolumes()() else volumes_w3 <- NULL
-    volumes <- c(volumes_w1,volumes_w2,volumes_w3)
+    if('Available Volumes' %in% search_network_path) volumes_w3 <- getVolumes()() else volumes_w3 <- NULL
+    volumes_network <- c(volumes_w1,volumes_w2,volumes_w3)
   }else{
-    volumes <- c( 'Current Directory'='.')
+    volumes_network <- c( 'Current Directory'='.')
   }
-  shinyFileChoose(input, "choose_tf_network_file", session = session,roots=volumes)
-  shinyFileChoose(input, "choose_sig_network_file",session = session,roots=volumes)
-  shinyFileChoose(input, "choose_eset_RData_file",session = session,roots=volumes)
-  if(is.null(pre_project_main_dir)==TRUE) shinyDirChoose(input, "project_main_dir", roots = volumes, session = session, restrictions = system.file(package = "base"))
+  shinyFileChoose(input, "choose_tf_network_file", session = session,roots=volumes_network)
+  shinyFileChoose(input, "choose_sig_network_file",session = session,roots=volumes_network)
+  #
+  search_eSet_path <- unique(setdiff(unique(search_eSet_path),''))
+  if(is.null(search_eSet_path)==FALSE & length(search_eSet_path)>0){
+    pre_path_id <- c('Current Directory','Home','R Installation','Available Volumes')
+    w1 <- setdiff(intersect(search_eSet_path,pre_path_id),'Available Volumes')
+    w2 <- setdiff(search_eSet_path,pre_path_id)
+    if(length(w1)>0) volumes_w1 <- c( 'Current Directory'='.',Home = fs::path_home(), "R Installation" = R.home())[w1] else volumes_w1 <- NULL
+    if(length(w2)>0){volumes_w2 <- w2; if(is.null(names(volumes_w2))==TRUE){names(volumes_w2)<-sprintf('User Path %s',1:length(w2))}}else{volumes_w2 <- NULL}
+    if('Available Volumes' %in% search_eSet_path) volumes_w3 <- getVolumes()() else volumes_w3 <- NULL
+    volumes_eSet <- c(volumes_w1,volumes_w2,volumes_w3)
+  }else{
+    volumes_eSet <- c( 'Current Directory'='.')
+  }
+  shinyFileChoose(input, "choose_eset_RData_file",session = session,roots=volumes_eSet)
+  volumes_output <- c( 'Current Directory'='.',Home = fs::path_home())
+  if(is.null(pre_project_main_dir)==TRUE) shinyDirChoose(input, "project_main_dir", roots = volumes_output, 
+                                                         session = session, restrictions = system.file(package = "base"))
   #shinyFileSave(input, "save", roots = volumes, session = session, restrictions = system.file(package = "base"))
   #
   use_data <- shiny::reactiveValues(eset=NULL,tf_network_file=NULL,sig_network_file=NULL,
@@ -1001,20 +1017,20 @@ server_MR <- function(input, output,session){
   shiny::observeEvent(input$doButton, { control_para$doanalysis <- TRUE;},once=FALSE,autoDestroy=FALSE)
   shiny::observeEvent(input$initButton0, { shinyjs::js$refresh();control_para$doloadData <- FALSE; control_para$checkanalysis <- FALSE;control_para$doanalysis <- FALSE;})
   output$filepaths_tf_network_file <- shiny::renderUI({
-      shiny::p(parseFilePaths(volumes, input$choose_tf_network_file)$datapath)
+      shiny::p(parseFilePaths(volumes_network, input$choose_tf_network_file)$datapath)
   })
   output$filepaths_sig_network_file <- shiny::renderUI({
-      shiny::p(parseFilePaths(volumes, input$choose_sig_network_file)$datapath)
+      shiny::p(parseFilePaths(volumes_network, input$choose_sig_network_file)$datapath)
   })
   output$filepaths_choose_eset_RData_file <- shiny::renderUI({
-      shiny::p(parseFilePaths(volumes, input$choose_eset_RData_file)$datapath)
+      shiny::p(parseFilePaths(volumes_eSet, input$choose_eset_RData_file)$datapath)
   })
   loadData <- shiny::reactive({
     output$error_message <- shiny::renderUI({shiny::p('')})
     inFile <- input$eset_RData_file
     print(inFile$datapath)
     inFile1 <- list()
-    inFile1$datapath <- parseFilePaths(volumes,input$choose_eset_RData_file)$datapath
+    inFile1$datapath <- parseFilePaths(volumes_eSet,input$choose_eset_RData_file)$datapath
     if(is.null(inFile$datapath)==TRUE & length(inFile1$datapath)==0) {
       control_para$doloadData <- FALSE;
       output$error_message <- shiny::renderUI({shiny::p('WARNING : NO upload or choose the RData file for the calculation eset, please check and re-try!')})
@@ -1040,8 +1056,8 @@ server_MR <- function(input, output,session){
     print('Finish loading the dataset')
     #
     inFile_tf1 <- list(); inFile_sig1 <- list();
-    inFile_tf1$datapath  <- parseFilePaths(volumes,input$choose_tf_network_file)$datapath
-    inFile_sig1$datapath <- parseFilePaths(volumes,input$choose_sig_network_file)$datapath
+    inFile_tf1$datapath  <- parseFilePaths(volumes_network,input$choose_tf_network_file)$datapath
+    inFile_sig1$datapath <- parseFilePaths(volumes_network,input$choose_sig_network_file)$datapath
     inFile_tf  <- input$tf_network_file
     inFile_sig <- input$sig_network_file
     if(is.null(inFile_tf$datapath)==TRUE & length(inFile_tf1$datapath)==0){
@@ -1088,7 +1104,7 @@ server_MR <- function(input, output,session){
     shiny::HTML(mess)
   })
   output$dirpaths_project_main_dir <- shiny::renderUI({
-    shiny::p(sprintf("Output main directory:%s",parseDirPath(volumes,input$project_main_dir)),style='color:red')
+    shiny::p(sprintf("Output main directory:%s",parseDirPath(volumes_output,input$project_main_dir)),style='color:red')
   })
   output$analysisOption <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
@@ -1205,7 +1221,7 @@ server_MR <- function(input, output,session){
         #control_para$doanalysis <- FALSE
         return(shiny::p('WARNING : No selection for the project main directory!',style='color:red;font-size:120%'))
       }
-      project_main_dir <- parseDirPath(volumes,input$project_main_dir)
+      project_main_dir <- parseDirPath(volumes_output,input$project_main_dir)
     }else{
       project_main_dir <- pre_project_main_dir
     }

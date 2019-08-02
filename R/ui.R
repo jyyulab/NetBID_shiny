@@ -8,7 +8,7 @@ library(fs)
 library(V8)
 library(zip)
 
-ui <- fluidPage(
+ui_Vis <- fluidPage(
   useShinyjs(),extendShinyjs(text = jscode),
   theme = shinytheme("sandstone"),
   titlePanel('NetBIDShiny for result visualization'),
