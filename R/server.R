@@ -534,7 +534,7 @@ server_Vis <- function(input, output,session) {
              ),
              shiny::fluidRow(
                shiny::column(6,offset=0,shiny::sliderInput('row_cex','row label fontsize',min=2,max=50,value=12)),
-               shiny::column(6,offset=0,shiny::sliderInput('col_cex','shiny::column label fontsize',min=2,max=50,value=12))
+               shiny::column(6,offset=0,shiny::sliderInput('col_cex','column label fontsize',min=2,max=50,value=12))
              )
            ),
            'doCategoryBoxPlot'=shiny::tagList(
@@ -1093,7 +1093,11 @@ server_MR <- function(input, output,session){
   })
   
   loadDemoData <- shiny::reactive({
-    #use_dir <- sprintf('%s/inst/',getwd())
+    #eset_demo_path <- 'data/eSet_RData/demo_eset.RData'
+    #load(eset_demo_path)
+    #use_data$eset <- eset
+    #use_data$tf_network_file <- 'data/network_txt/Other_network_demo/human_MB.TF_consensus_network_ncol_.txt'
+    #use_data$sig_network_file <- 'data/network_txt/Other_network_demo/human_MB.SIG_consensus_network_ncol_.txt'
     use_dir <- system.file('',package = "NetBIDshiny")
     eset_demo_path <- sprintf('%s/demo1_human/demo_human_MB_eset.RData',use_dir)
     load(eset_demo_path)
