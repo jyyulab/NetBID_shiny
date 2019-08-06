@@ -43,7 +43,17 @@
         
           <li class="navigation-list-item">
             
-            <a href="http://localhost:4000/docs/tutorial" class="navigation-list-link">Tutorial</a>
+            <a href="http://localhost:4000/docs/tutorial4MR" class="navigation-list-link">Tutorial for hidden driver estimation</a>
+            
+          </li>
+        
+      
+    
+      
+        
+          <li class="navigation-list-item">
+            
+            <a href="http://localhost:4000/docs/tutorial4Vis" class="navigation-list-link">Tutorial for Visualization</a>
             
           </li>
         
@@ -75,7 +85,7 @@
       <div class="main-content js-main-content" tabindex="0">
         
         <div id="main-content" class="page-content" role="main">
-          <h1 class="fs-9" id="netbid2-shiny-app-for-online-analysis-and-interactive-visualization">NetBID2 Shiny app for online analysis and interactive visualization</h1>
+          <h1 class="fs-9" id="netbidshiny-netbid2-shiny-app-for-online-hidden-driver-analysis-and-interactive-visualization">NetBIDshiny: NetBID2 Shiny app for online hidden driver analysis and interactive visualization</h1>
 
 <p class="fs-6 fw-300">Online tutorial and documentation of NetBIDshiny.</p>
 
@@ -95,18 +105,29 @@
 
 <h3 id="dependencies">Dependencies</h3>
 
-<p>R, version &gt;= 3.4.0</p>
+<p>R, version &gt;= 3.6.0</p>
 
-<p>NetBID2, version &gt;= 0.1.1</p>
+<p>NetBID2, version &gt;= 0.1.2</p>
 
 <h3 id="quick-start-install-r-package-netbidshiny">Quick start: install R package (NetBIDshiny)</h3>
 
 <ul>
-  <li>install the R package from github (not published yet)</li>
+  <li>install the R package from github</li>
 </ul>
 
 <div class="language-R highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">devtools</span><span class="p">)</span><span class="w">
-</span><span class="n">install_github</span><span class="p">(</span><span class="s2">"jyyulab/NetBID_shiny"</span><span class="p">,</span><span class="n">ref</span><span class="o">=</span><span class="s1">'master'</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">BiocManager</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">NetBID2</span><span class="p">)</span><span class="w">
+</span><span class="c1"># set repos, for R version 3.6.0, Bioconductor version 3.9</span><span class="w">
+</span><span class="n">local</span><span class="p">({</span><span class="w">
+  </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">getOption</span><span class="p">(</span><span class="s2">"repos"</span><span class="p">)</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"CRAN"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://cran.rstudio.com/"</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"BioCsoft"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://bioconductor.org/packages/3.9/bioc"</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"BioCann"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://bioconductor.org/packages/3.9/data/annotation"</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"BioCexp"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://bioconductor.org/packages/3.9/data/experiment"</span><span class="w">
+  </span><span class="n">options</span><span class="p">(</span><span class="n">repos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w">
+</span><span class="p">})</span><span class="w">
+</span><span class="n">install_github</span><span class="p">(</span><span class="s2">"jyyulab/NetBID_shiny"</span><span class="p">,</span><span class="n">ref</span><span class="o">=</span><span class="s1">'master'</span><span class="p">)</span><span class="w"> 
 </span></code></pre></div></div>
 
 <ul>
@@ -118,17 +139,19 @@
 
 <h3 id="initiate-the-netbidshiny-web-app">Initiate the NetBIDShiny web app</h3>
 
-<p>Call <code class="highlighter-rouge">run_NetBID_shiny()</code> to initiate the app.</p>
+<p>Call <code class="highlighter-rouge">NetBIDshiny.run4MR()</code> to initiate the app for master regulator identification or <code class="highlighter-rouge">NetBIDshiny.run4Vis()</code> to initiate the app for result visualization.</p>
 
 <div class="language-R highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">NetBIDshiny</span><span class="p">)</span><span class="w">
-</span><span class="n">run_NetBID_shiny</span><span class="p">()</span><span class="w">
+</span><span class="n">NetBIDshiny.run4Vis</span><span class="p">()</span><span class="w">
+</span><span class="n">NetBIDshiny.run4MR</span><span class="p">()</span><span class="w">
 </span></code></pre></div></div>
 
 <p>Then open a browser and enter local url address (e.g: http://127.0.0.1:XXXX).</p>
 
-<h3 id="online-server">Online server</h3>
+<h3 id="online-server-not-available-yet">Online server (not available yet)</h3>
 
-<p>The public online version of NetBIDshiny can be found here <a href="XXX">XXX</a>. This doesn’t require the local installation.</p>
+<p>The public online version of NetBIDshiny can be found here <a href="#">under construction</a>. 
+This doesn’t require the local installation.</p>
 
 <hr />
 
@@ -138,9 +161,18 @@
 
 <h2 id="tutorial">Tutorial</h2>
 
-<p>We choose the demo dataset from GEO database as in NetBID2: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028">GSE116028</a>.</p>
+<p>We choose:</p>
 
-<p>Please check <a href="docs/tutorial">Tutorial page</a> for more details.</p>
+<ol>
+  <li>
+    <p>the human MB (medulloblastoma) demo dataset from GEO database as in NetBID2: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028">GSE116028</a>, with network files generated by using the same dataset.</p>
+  </li>
+  <li>
+    <p>the mouse BPD (bronchopulmonary dysplasia) demo dataset from GEO database <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE25286">GSE25286</a>, with network files generated by using normal lung tissue from GTEx (human).</p>
+  </li>
+</ol>
+
+<p>Please check <a href="docs/tutorial4MR">Tutorial for MR</a> for the hidden driver estimation and <a href="docs/tutorial4Vis">Tutorial for visualization</a> for result visualization.</p>
 
 <hr />
 

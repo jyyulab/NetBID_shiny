@@ -8,8 +8,10 @@ library(fs)
 library(V8)
 library(zip)
 
+jscode <- "shinyjs.refresh=function(){history.go(0);};"
+
 ui_Vis <- fluidPage(
-  useShinyjs(),extendShinyjs(text = jscode),
+  useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
   theme = shinytheme("sandstone"),
   titlePanel('NetBIDShiny for result visualization'),
   sidebarPanel(width=5,
@@ -53,7 +55,7 @@ ui_Vis <- fluidPage(
 )
 #
 ui_MR <- fluidPage(
-  useShinyjs(),extendShinyjs(text = jscode),
+  useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
   theme = shinytheme("sandstone"),
   titlePanel('NetBIDShiny for hidden driver estimation'),
   sidebarPanel(width=5,

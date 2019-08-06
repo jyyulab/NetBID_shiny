@@ -47,6 +47,8 @@ Here, the goal is to **find potential drivers in Group4 compared to other subtyp
 
   - [CATEGORY_BOXPLOT: get the distribution of one driver’s expression/activity value across group samples](#category_boxplot-get-the-distribution-of-one-drivers-expressionactivity-value-across-group-samples)
 
+- [Q & A: How to share results with others by deploying the application by having pre-generated result RData dataset ?](#q--a-how-to-share-results-with-others-by-deploying-the-application-by-having-pre-generated-result-rdata-dataset-)
+
 ---------
 
 Start the app:
@@ -127,6 +129,10 @@ As shown above, the "NOTE" messages show the project name, main directory, the s
 
 **About data uploading time.** It will take 3~4 seconds for the demo dataset to upload. If your target dataset is large but contains the ID conversion table, for example the RData size is about 120 MB, it will take 10~15 seconds for uploading. Otherwise it will take longer time to upload (20~40 seconds from test), because acquiring data from bioMart website takes time (varies from the internet speed).
 
+User could also choose the RData file pre-saved in the application folders by click the **CHOOSE THE MASTER TABL RDATA FILE** (this function is very important for result sharing):
+
+![f3](f3.png)
+
 ## Navigate through the master table
 
 The bottom left of the interface displays the master table. User can search the whole table by keywords and sort columns by clicking the column names. The first four columns are freezed. 
@@ -202,6 +208,21 @@ Users can choose which phenotype feature to display.
 
 ![f13](f13.png)
 
+## Q & A: How to share results with others by deploying the application by having pre-generated result RData dataset ?
+
+There is one option for running `NetBIDshiny.run4Vis()`. 
+
+-- **search_path**, path for master table Rdata searching in the app server. User could choose from: 'Current Directory','Home','R Installation','Available Volumes', and could put user-defined server path (better use absolute path). Default is c('Current Directory','Home'). If set to NULL, only 'Current Directory' will be used.
+
+If user want to deploy the application with pre-generated result RData files, he could run the application like this (below is the screenshot for the data directory for our online version):
+
+![f14](f14.png)
+
+And put the output directory as option to run the application:
+
+```r
+NetBIDshiny.run4Vis(search_path='data/project_RData/')
+```
 
 -------
 

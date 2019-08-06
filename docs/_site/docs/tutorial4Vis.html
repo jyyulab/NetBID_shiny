@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="en-us">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  
+
+  <title>Tutorial for Visualization - </title>
+  <link rel="stylesheet" href="http://localhost:4000/assets/css/just-the-docs.css">
+  
+  <script type="text/javascript" src="http://localhost:4000/assets/js/vendor/lunr.min.js"></script>
+  
+  <script type="text/javascript" src="http://localhost:4000/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+  <div class="page-wrap">
+    <div class="side-bar">
+      <a href="http://localhost:4000" class="site-title fs-6 lh-tight"></a>
+      <span class="fs-3"><button class="js-main-nav-trigger navigation-list-toggle btn btn-outline" type="button" data-text-toggle="Hide">Menu</button></span>
+      <div class="navigation main-nav js-main-nav">
+        <nav role="navigation" aria-label="Main navigation">
+  <ul class="navigation-list">
+    
+    
+      
+        
+          <li class="navigation-list-item">
+            
+            <a href="http://localhost:4000/" class="navigation-list-link">NetBIDshiny</a>
+            
+          </li>
+        
+      
+    
+      
+        
+          <li class="navigation-list-item">
+            
+            <a href="http://localhost:4000/docs/tutorial4MR" class="navigation-list-link">Tutorial for hidden driver estimation</a>
+            
+          </li>
+        
+      
+    
+      
+        
+          <li class="navigation-list-item active">
+            
+            <a href="http://localhost:4000/docs/tutorial4Vis" class="navigation-list-link active">Tutorial for Visualization</a>
+            
+          </li>
+        
+      
+    
+  </ul>
+</nav>
+
+      </div>
+      <footer role="contentinfo" class="site-footer">
+        <p class="text-small text-grey-dk-000 mb-0">This site uses <a href="https://github.com/pmarsceill/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.</p>
+      </footer>
+    </div>
+    <div class="main-content-wrap">
+      <div class="page-header">
+        <div class="main-content">
+          
+          <div class="search js-search">
+            <div class="search-input-wrap">
+              <input type="text" class="js-search-input search-input" tabindex="0" placeholder="Search " aria-label="Search " autocomplete="off">
+              <svg width="14" height="14" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg" class="search-icon"><title>Search</title><g fill-rule="nonzero"><path d="M17.332 20.735c-5.537 0-10-4.6-10-10.247 0-5.646 4.463-10.247 10-10.247 5.536 0 10 4.601 10 10.247s-4.464 10.247-10 10.247zm0-4c3.3 0 6-2.783 6-6.247 0-3.463-2.7-6.247-6-6.247s-6 2.784-6 6.247c0 3.464 2.7 6.247 6 6.247z"/><path d="M11.672 13.791L.192 25.271 3.02 28.1 14.5 16.62z"/></g></svg>
+            </div>
+            <div class="js-search-results search-results-wrap"></div>
+          </div>
+          
+          
+        </div>
+      </div>
+      <div class="main-content js-main-content" tabindex="0">
+        
+          
+        
+        <div id="main-content" class="page-content" role="main">
+          <h1 id="tutorial-for-visualization">Tutorial for Visualization</h1>
+
+<p>The purpose of NetBIDshiny:</p>
+
+<p><strong>provide an interactive online visualization tool for further analysis of drivers</strong>.</p>
+
+<p>We use the same demo data set as in NetBID2, from GEO database: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE116028">GSE116028</a>.</p>
+
+<p>This microarray dataset contains 13 adult medulloblastoma (MB) samples. 
+Three phenotype subgroups of adult MB have been identified from distinguishabled expression profiles, clinical features, pathological features and prognosis.
+These subgroups together with their sample numbers are, 3 SHH, 4 WNT, and 6 Group4.
+Group4 tumors in adult have significantly worse progression-free and overall survival, compared to other molecular subtypes of tumor.
+Here, the goal is to <strong>find potential drivers in Group4 compared to other subtypes using NetBID2</strong>. This may relate to specific clinical feature of Group4 MB subtype.</p>
+
+<hr />
+<h2 id="quick-navigation">Quick Navigation</h2>
+
+<ul>
+  <li>
+    <p><a href="#introduction-to-user-interface-of-netbidshiny">Introduction to User Interface of NetBIDshiny</a></p>
+  </li>
+  <li>
+    <p><a href="#upload-the-rdata">Upload the RData</a></p>
+  </li>
+  <li>
+    <p><a href="#navigate-through-the-master-table">Navigate through the master table</a></p>
+  </li>
+  <li>
+    <p><a href="#plots">Plots</a></p>
+
+    <ul>
+      <li>
+        <p><a href="#volcano_plot-quickly-identify-the-top-differentially-expressedactivated-drivers">VOLCANO_PLOT: quickly identify the top differentially expressed/activated drivers</a></p>
+      </li>
+      <li>
+        <p><a href="#netbid_plot-get-the-statistics-of-the-top-differentially-expressedactivated-drivers">NETBID_PLOT: get the statistics of the top differentially expressed/activated drivers</a></p>
+      </li>
+      <li>
+        <p><a href="#gsea_plot-get-the-detailed-statistics-of-the-top-differentially-expressedactivated-drivers">GSEA_PLOT: get the detailed statistics of the top differentially expressed/activated drivers</a></p>
+      </li>
+      <li>
+        <p><a href="#heatmap-get-the-expressionactivity-pattern-of-the-top-drivers-across-all-samples">HEATMAP: get the expression/activity pattern of the top drivers across all samples</a></p>
+      </li>
+      <li>
+        <p><a href="#function_enrich_plot-get-the-functional-annotation-for-the-top-drivers">FUNCTION_ENRICH_PLOT: get the functional annotation for the top drivers</a></p>
+      </li>
+      <li>
+        <p><a href="#bubble_plot-get-the-functional-annotation-for-the-top-drivers-and-their-target-genes">BUBBLE_PLOT: get the functional annotation for the top drivers and their target genes</a></p>
+      </li>
+      <li>
+        <p><a href="#target_net-show-the-sub-network-structure-of-one-selected-driver">TARGET_NET: show the sub-network structure of one selected driver</a></p>
+      </li>
+      <li>
+        <p><a href="#category_boxplot-get-the-distribution-of-one-drivers-expressionactivity-value-across-group-samples">CATEGORY_BOXPLOT: get the distribution of one driver’s expression/activity value across group samples</a></p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p><a href="#q--a-how-to-share-results-with-others-by-deploying-the-application-by-having-pre-generated-result-rdata-dataset-">Q &amp; A: How to share results with others by deploying the application by having pre-generated result RData dataset ?</a></p>
+  </li>
+</ul>
+
+<hr />
+
+<p>Start the app:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NetBIDshiny.run4Vis</span><span class="p">()</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="introduction-to-user-interface-of-netbidshiny">Introduction to User Interface of NetBIDshiny</h2>
+
+<p>The following screenshot is the user interface of NetBIDshiny,</p>
+
+<p><img src="f1.png" alt="f1" /></p>
+
+<p><strong>The user interface consists of 4 parts:</strong></p>
+
+<ul>
+  <li>
+    <p>Top left is for target dataset manipulation. Users can upload the target Rdata from local path, choose species name, analysis level and ID type for analysis. We also provide a button to load the demo dataset, so users can have a taste of how NetBIDshiny works.</p>
+  </li>
+  <li>
+    <p>Bottom left is for master table display. Each row is a driver, containing all the statistics calculated by NetBID2 analysis.</p>
+  </li>
+  <li>
+    <p>Top right is for plot type selection, with plot type tabs and options.</p>
+  </li>
+  <li>
+    <p>Bottom right is the plot panel. It includes adjusting bars and figure download button. Users can save the plot as PNG by right click, or click the button to download it as PDF.</p>
+  </li>
+</ul>
+
+<p><strong>Plot types and tabs:</strong></p>
+
+<ul>
+  <li><strong>VOLCANO_PLOT</strong>, the volcano plot used to quickly identify the top differentially expressed/activated drivers. Created by <code class="highlighter-rouge">draw.volcanoPlot()</code> in NetBID2.</li>
+  <li><strong>NETBID_PLOT</strong>, the NETBID plot used to get the statistics of the top differentially expressed/activated drivers. Created by <code class="highlighter-rouge">draw.NetBID()</code> in NetBID2.</li>
+  <li><strong>GSEA_PLOT</strong>, the GSEA plot used to get the detailed statistics of the top differentially expressed/activated drivers. Created by <code class="highlighter-rouge">draw.GSEA.NetBID()</code> in NetBID2.</li>
+  <li><strong>HEATMAP</strong>, the heatmap used to get the expression/activity pattern of the top drivers across all samples. Created by <code class="highlighter-rouge">draw.heatmap()</code> in NetBID2.</li>
+  <li><strong>FUNCTION_ENRICH_PLOT</strong>, the Function Enrichment plot used to get the functional annotation for the top drivers. Created by <code class="highlighter-rouge">draw.funcEnrich.cluster()</code> in NetBID2.</li>
+  <li><strong>BUBBLE_PLOT</strong>, the bubble plot used to get the functional annotation for the top drivers and their target genes. Created by <code class="highlighter-rouge">draw.bubblePlot()</code> in NetBID2.</li>
+  <li><strong>TARGET_NET</strong> , the Target Network plot used to show the sub-network structure of one selected driver. Created by <code class="highlighter-rouge">draw.targetNet()</code> and <code class="highlighter-rouge">draw.targetNet.TWO()</code> in NetBID2.</li>
+  <li><strong>CATEGORY_PLOT</strong>, the grouped box plot used to get the distribution of one driver’s expression/activity value across group samples. Created by <code class="highlighter-rouge">draw.categoryValue()</code> in NetBID2.</li>
+</ul>
+
+<h2 id="upload-the-rdata">Upload the RData</h2>
+
+<p><strong>Before start, take a quick review of the target RData generation.</strong></p>
+
+<p>The input RData is a super list object <code class="highlighter-rouge">analysis.par</code> with multiple elements wrapped inside, which including the master table. 
+It is created by the “Driver Estimation” step in NetBID2 analysis. It is saved as RData using this command <code class="highlighter-rouge">NetBID.saveRData(analysis.par=analysis.par,step='ms-tab')</code>. For details, please check the drivers estimation pipeline from NetBID2 online tutorial. The RData is saved in <code class="highlighter-rouge">analysis.par$out.dir.DATA</code> directory, with file name <code class="highlighter-rouge">analysis.par.Step.ms-tab.RData</code>.</p>
+
+<p>Details about the <code class="highlighter-rouge">analysis.par</code> Rdata:</p>
+
+<ul>
+  <li><strong>main.dir</strong>, the main directory of the project, required by NetBIDshiny.</li>
+  <li><strong>project.name</strong>, the project name, required by NetBIDshiny.</li>
+  <li><strong>merge.network</strong>, a list with three elements (<code class="highlighter-rouge">target_list</code>, <code class="highlighter-rouge">igraph_obj</code> and <code class="highlighter-rouge">target_net</code>) which contains the detailed network structure from the NetBID, required by NetBIDshiny.</li>
+  <li><strong>cal.eset</strong>, an ExpressionSet class object storing the expression matrix, phenotype information and feature informaiton, required by NetBIDshiny.</li>
+  <li><strong>merge.ac.eset</strong>, an ExpressionSet class object for the activity value of the analysis dataset, required for NetBIDshiny.</li>
+  <li><strong>final_ms_tab</strong>, a data frame containing detailed results for all tested drivers, required by NetBIDshiny.</li>
+  <li><strong>transfer_tab</strong>, a data frame for ID conversion. It is suggested but not required to run NetBIDshiny. If it is not included in the uploading RData, NetBIDshiny will automatically generate one.</li>
+  <li>out.dir (out.dir.QC, out.dir.DATA, out.dir.PLOT), the directory and sub-directories of NetBID project, not required by NetBIDshiny.</li>
+  <li>DE and DA, contain detailed differential expression (DE)/activity (DA) statistics, not required by NetBIDshiny.</li>
+</ul>
+
+<p><strong>Upload the RData.</strong></p>
+
+<p>Click the <strong>BROWSE</strong> button and select the target RData file from your PC.
+Then, please choose:</p>
+
+<ul>
+  <li>the species name in the select list (currently only 11 species is allowed, due to the MSigDB annotation limitation).</li>
+  <li>the gene/transcript level, this is the level of the driver’s main ID type.</li>
+  <li>the main ID type, please select the ID type for your drivers (the select list has 10 most common ID types). If it is not listed, user can enter it manually in the textbox on the right. For access to the full list of allowed ID types, please check <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/biomaRt/inst/doc/biomaRt.html">biomaRt</a> or try the scripts below.</li>
+</ul>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ensembl</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">useMart</span><span class="p">(</span><span class="s2">"ensembl"</span><span class="p">,</span><span class="w"> </span><span class="n">dataset</span><span class="o">=</span><span class="s2">"hsapiens_gene_ensembl"</span><span class="p">)</span><span class="w">
+</span><span class="n">listAttributes</span><span class="p">(</span><span class="n">ensembl</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If there is an error message <strong>maximum upload size exceeded</strong>, please set <code class="highlighter-rouge">options(shiny.maxRequestSize = 300*1024^2)</code> to a larger number. Here the options means the maximum request size is 300mb.</p>
+
+<p>Then click the <strong>LOAD/RELOAD THE UPLOADED RDATA</strong> button to load the target RData. For demo RData, user can directly click the <strong>LOAD/RELOAD THE DEMO RDATA</strong> button.
+After the upload of the targe RData, the master table and the “NOTE” messages will be displayed. And the <strong>VOLCANO_PLOT</strong>,<strong>TARGET_NET</strong>, <strong>CATEGORY_PLOT</strong> tabs are available.
+Now the interface will look like this,</p>
+
+<p><img src="f2.png" alt="f2" /></p>
+
+<p>As shown above, the “NOTE” messages show the project name, main directory, the species name, analysis level, main ID type and the number of TF (transcription factors) and SIG (signalling factors). If the first selection is wrong, user can re-select everything and click <strong>LOAD/RELOAD THE UPLOADED RDATA</strong> button for reload.</p>
+
+<p><strong>About data uploading time.</strong> It will take 3~4 seconds for the demo dataset to upload. If your target dataset is large but contains the ID conversion table, for example the RData size is about 120 MB, it will take 10~15 seconds for uploading. Otherwise it will take longer time to upload (20~40 seconds from test), because acquiring data from bioMart website takes time (varies from the internet speed).</p>
+
+<p>User could also choose the RData file pre-saved in the application folders by click the <strong>CHOOSE THE MASTER TABL RDATA FILE</strong> (this function is very important for result sharing):</p>
+
+<p><img src="f3.png" alt="f3" /></p>
+
+<h2 id="navigate-through-the-master-table">Navigate through the master table</h2>
+
+<p>The bottom left of the interface displays the master table. User can search the whole table by keywords and sort columns by clicking the column names. The first four columns are freezed.</p>
+
+<ul>
+  <li>For one master table, it consists of three parts:
+    <ul>
+      <li>The first six columns are <code class="highlighter-rouge">gene_label</code>, <code class="highlighter-rouge">geneSymbol</code>, <code class="highlighter-rouge">originalID</code>, <code class="highlighter-rouge">originalID_label</code>, <code class="highlighter-rouge">funcType</code> and <code class="highlighter-rouge">Size</code>.
+        <ul>
+          <li><code class="highlighter-rouge">gene_label</code> is the driver’s gene symbol or transcript symbol, with suffix “_TF” or “_SIG” to show driver’s type.</li>
+          <li><code class="highlighter-rouge">geneSymbol</code> is the driver’s gene symbol or transcript symbol, without suffix.</li>
+          <li><code class="highlighter-rouge">originalID</code> is the original ID type used in network construction, which should match the ID type in <code class="highlighter-rouge">analysis.par$cal.eset</code>, <code class="highlighter-rouge">analysis.par$DE</code>.</li>
+          <li><code class="highlighter-rouge">originalID_label</code> is the original ID type with suffix “_TF” or “_SIG”, which should match the the ID type in <code class="highlighter-rouge">analysis.par$merge.network</code>, <code class="highlighter-rouge">analysis.par$merge.ac.eset</code>,<code class="highlighter-rouge">analysis.par$DA</code>.</li>
+          <li><strong><code class="highlighter-rouge">originalID_label</code></strong> is the only column to ensure unique ID for row record.</li>
+          <li><code class="highlighter-rouge">funcType</code> is either “TF” or “SIG” to mark driver’s type.</li>
+          <li><code class="highlighter-rouge">Size</code> is number of target genes for the driver.</li>
+        </ul>
+      </li>
+      <li>The statistical columns are named as <code class="highlighter-rouge">prefix.comp_name_{DA or DE}</code>. The <code class="highlighter-rouge">prefix</code> can be <code class="highlighter-rouge">Z</code>, <code class="highlighter-rouge">P.Value</code>, <code class="highlighter-rouge">logFC</code> or <code class="highlighter-rouge">AveExpr</code> to indicate which statistical value is stored. The <code class="highlighter-rouge">comp_name</code> is the comparison name. For example, <code class="highlighter-rouge">Z.G4.Vs.WNT_DA</code> means the Z-statistics of the differential activity (DA) calculated from comparison between phenotype G4 and phenotype WNT. The color shade of the background indicated the significance of Z-statistics.</li>
+      <li>The next 13 columns (from <code class="highlighter-rouge">ensembl_gene_id</code> to <code class="highlighter-rouge">refseq_mrna</code>) are detailed information of genes.</li>
+      <li>The last columns (optional) are the detailed information of marker genes, users use <code class="highlighter-rouge">mark_strategy='add_column'</code> to set.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="plots">Plots</h2>
+
+<h3 id="volcano_plot-quickly-identify-the-top-differentially-expressedactivated-drivers">VOLCANO_PLOT: quickly identify the top differentially expressed/activated drivers</h3>
+
+<p>The volcano plot is IMPORTANT in NetBIDshiny, because the activation of <strong>NETBID_PLOT</strong>, <strong>GSEA_PLOT</strong>, <strong>HEATMAP</strong>, <strong>FUNCTION_ENRICH_PLOT</strong> and <strong>BUBBLE_PLOT</strong> is highly dependent on that. If draw these plots without the activation of the volcano plot, a warning message will show up (“Please plot volcano plot first in order to choose the targeted comparison !””).</p>
+
+<p>Since the differential expression (DE)/activity (DA) statistics are calculated from certain comparisons, users need to choose which comparison to visualize. Users can also adjust the threshold for P-values, logFC and driver’s target size.</p>
+
+<p>Here, we selected <code class="highlighter-rouge">G4.Vs.others_DA</code> as the comparison, and chose the logFC column and P-value column (if not chosen, it will automatically change to the columns related to the comparison). Set the logFC threshold to 0.3, P-value threshold to 1e-8, minimum target size to 30 and maximum target size to 1000, and checked the <code class="highlighter-rouge">Display significant items on plot?</code> box. The plot created is shown as below,</p>
+
+<p><img src="f4.png" alt="f4" /></p>
+
+<p>At the bottom, the MESSAGE shows that 48 drivers have passed by the filter. User can modify the selections to get another top driver list. Click the <strong>UPDATE THE MASTER TABLE BY USING THE PARAMETERS AND TOP NUMBER ABOVE</strong> button after selection, the interface will look like this,</p>
+
+<p><img src="f5.png" alt="f5" /></p>
+
+<p><strong>NOTE:</strong> In the <strong>NETBID_PLOT</strong>, <strong>GSEA_PLOT</strong>, <strong>HEATMAP</strong>, <strong>FUNCTION_ENRICH_PLOT</strong> and <strong>BUBBLE_PLOT</strong>, the top list is based on the ranking of the Z-statistics. If user only want the Z-statistics as the criteria to get the top driver list, it is not necessary to update the master table. Otherwise, the update step is necessary. (For example, if user only want to focus on drivers with target size ranges from 30 to 500, he need to set this filter and update the master table first). When user click the <strong>UPDATE THE MASTER TABLE BY USING THE PARAMETERS AND TOP NUMBER ABOVE</strong> button, he will need to re-do the valcano plot step to define the main comparison again.</p>
+
+<h3 id="netbid_plot-get-the-statistics-of-the-top-differentially-expressedactivated-drivers">NETBID_PLOT: get the statistics of the top differentially expressed/activated drivers</h3>
+
+<p><img src="f6.png" alt="f6" /></p>
+
+<h3 id="gsea_plot-get-the-detailed-statistics-of-the-top-differentially-expressedactivated-drivers">GSEA_PLOT: get the detailed statistics of the top differentially expressed/activated drivers</h3>
+
+<p><img src="f7.png" alt="f7" /></p>
+
+<h3 id="heatmap-get-the-expressionactivity-pattern-of-the-top-drivers-across-all-samples">HEATMAP: get the expression/activity pattern of the top drivers across all samples</h3>
+
+<p><img src="f8.png" alt="f8" /></p>
+
+<h3 id="function_enrich_plot-get-the-functional-annotation-for-the-top-drivers">FUNCTION_ENRICH_PLOT: get the functional annotation for the top drivers</h3>
+
+<p>It uses the annotation from MSigDB database. User can choose multiple categories of gene sets and related statistics for calculation. As long as the main category is selected, all the gene sets from that category will be used, regardless of the selection of sub-category. For example, if user choose the ‘C5:GO’ main category, all ‘BP’, ‘MF’, ‘CC’ will be used.</p>
+
+<p><img src="f9.png" alt="f9" /></p>
+
+<h3 id="bubble_plot-get-the-functional-annotation-for-the-top-drivers-and-their-target-genes">BUBBLE_PLOT: get the functional annotation for the top drivers and their target genes</h3>
+
+<p>It uses the annotation from MSigDB database. The plot creation will take some time (around several seconds). The figure size could be very large and inconvenient to see. We suggest to download it as PDF.</p>
+
+<p><img src="f10.png" alt="f10" /></p>
+
+<h3 id="target_net-show-the-sub-network-structure-of-one-selected-driver">TARGET_NET: show the sub-network structure of one selected driver</h3>
+
+<p>For a better visualization of this highly overlapped network structure, we offer the adjustment of text size <code class="highlighter-rouge">cex</code> and <code class="highlighter-rouge">number of layers</code>.</p>
+
+<p><img src="f11.png" alt="f11" /></p>
+
+<p>If add one more interested driver, it will draw a shared sub-network with overlapped target genes in the middle.</p>
+
+<p><img src="f12.png" alt="f12" /></p>
+
+<h3 id="category_boxplot-get-the-distribution-of-one-drivers-expressionactivity-value-across-group-samples">CATEGORY_BOXPLOT: get the distribution of one driver’s expression/activity value across group samples</h3>
+
+<p>Users can choose which phenotype feature to display.</p>
+
+<p><img src="f13.png" alt="f13" /></p>
+
+<h2 id="q--a-how-to-share-results-with-others-by-deploying-the-application-by-having-pre-generated-result-rdata-dataset-">Q &amp; A: How to share results with others by deploying the application by having pre-generated result RData dataset ?</h2>
+
+<p>There is one option for running <code class="highlighter-rouge">NetBIDshiny.run4Vis()</code>.</p>
+
+<p>– <strong>search_path</strong>, path for master table Rdata searching in the app server. User could choose from: ‘Current Directory’,’Home’,’R Installation’,’Available Volumes’, and could put user-defined server path (better use absolute path). Default is c(‘Current Directory’,’Home’). If set to NULL, only ‘Current Directory’ will be used.</p>
+
+<p>If user want to deploy the application with pre-generated result RData files, he could run the application like this (below is the screenshot for the data directory for our online version):</p>
+
+<p><img src="f14.png" alt="f14" /></p>
+
+<p>And put the output directory as option to run the application:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NetBIDshiny.run4Vis</span><span class="p">(</span><span class="n">search_path</span><span class="o">=</span><span class="s1">'data/project_RData/'</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+
+
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
