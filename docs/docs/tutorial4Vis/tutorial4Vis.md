@@ -214,7 +214,7 @@ There is one option for running `NetBIDshiny.run4Vis()`.
 
 -- **search_path**, path for master table Rdata searching in the app server. User could choose from: 'Current Directory','Home','R Installation','Available Volumes', and could put user-defined server path (better use absolute path). Default is c('Current Directory','Home'). If set to NULL, only 'Current Directory' will be used.
 
-If user want to deploy the application with pre-generated result RData files, he could run the application like this (below is the screenshot for the data directory for our online version):
+If user want to deploy the application with pre-generated result RData files, he could run the application like this (below is the screenshot for the data directory for our online version, the code is slightly different to the code in the package and we use the original code for deploying. ):
 
 ![f14](f14.png)
 

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="en-us">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  
+
+  <title>FAQ - </title>
+  <link rel="stylesheet" href="http://localhost:4000/assets/css/just-the-docs.css">
+  
+  <script type="text/javascript" src="http://localhost:4000/assets/js/vendor/lunr.min.js"></script>
+  
+  <script type="text/javascript" src="http://localhost:4000/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+  <div class="page-wrap">
+    <div class="side-bar">
+      <a href="http://localhost:4000" class="site-title fs-6 lh-tight"></a>
+      <span class="fs-3"><button class="js-main-nav-trigger navigation-list-toggle btn btn-outline" type="button" data-text-toggle="Hide">Menu</button></span>
+      <div class="navigation main-nav js-main-nav">
+        <nav role="navigation" aria-label="Main navigation">
+  <ul class="navigation-list">
+    
+    
+      
+        
+          <li class="navigation-list-item">
+            
+            <a href="http://localhost:4000/" class="navigation-list-link">NetBIDshiny</a>
+            
+          </li>
+        
+      
+    
+      
+        
+          <li class="navigation-list-item">
+            
+            <a href="http://localhost:4000/docs/tutorial4MR" class="navigation-list-link">Tutorial for hidden driver estimation</a>
+            
+          </li>
+        
+      
+    
+      
+        
+          <li class="navigation-list-item">
+            
+            <a href="http://localhost:4000/docs/tutorial4Vis" class="navigation-list-link">Tutorial for Visualization</a>
+            
+          </li>
+        
+      
+    
+      
+        
+          <li class="navigation-list-item active">
+            
+            <a href="http://localhost:4000/docs/FAQ" class="navigation-list-link active">FAQ</a>
+            
+          </li>
+        
+      
+    
+  </ul>
+</nav>
+
+      </div>
+      <footer role="contentinfo" class="site-footer">
+        <p class="text-small text-grey-dk-000 mb-0">This site uses <a href="https://github.com/pmarsceill/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.</p>
+      </footer>
+    </div>
+    <div class="main-content-wrap">
+      <div class="page-header">
+        <div class="main-content">
+          
+          <div class="search js-search">
+            <div class="search-input-wrap">
+              <input type="text" class="js-search-input search-input" tabindex="0" placeholder="Search " aria-label="Search " autocomplete="off">
+              <svg width="14" height="14" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg" class="search-icon"><title>Search</title><g fill-rule="nonzero"><path d="M17.332 20.735c-5.537 0-10-4.6-10-10.247 0-5.646 4.463-10.247 10-10.247 5.536 0 10 4.601 10 10.247s-4.464 10.247-10 10.247zm0-4c3.3 0 6-2.783 6-6.247 0-3.463-2.7-6.247-6-6.247s-6 2.784-6 6.247c0 3.464 2.7 6.247 6 6.247z"/><path d="M11.672 13.791L.192 25.271 3.02 28.1 14.5 16.62z"/></g></svg>
+            </div>
+            <div class="js-search-results search-results-wrap"></div>
+          </div>
+          
+          
+        </div>
+      </div>
+      <div class="main-content js-main-content" tabindex="0">
+        
+          
+        
+        <div id="main-content" class="page-content" role="main">
+          <h2 id="tutorial-for-hidden-driver-master-regulator-estimation">Tutorial for Hidden driver (master regulator) estimation</h2>
+
+<ul>
+  <li>
+    <p><a href="../docs/tutorial4MR#q--a-how-to-prepare-eset-class-object-rdata-file-">Q &amp; A: How to prepare eSet class object RData file ?</a></p>
+  </li>
+  <li>
+    <p><a href="../docs/tutorial4MR#q--a-how-to-use-self-defined-network-files-">Q &amp; A: How to use self-defined network files ?</a></p>
+  </li>
+  <li>
+    <p><a href="../docs/tutorial4MR#q--a-how-to-use-if-only-has-tf-network-without-sig-network-">Q &amp; A: How to use if only has TF network without SIG network ?</a></p>
+  </li>
+  <li>
+    <p><a href="../docs/tutorial4MR#q--a-how-to-deploy-the-application-by-having-pre-generated-network-files-or-calculation-dataset-">Q &amp; A: How to deploy the application by having pre-generated network files or calculation dataset ?</a></p>
+  </li>
+</ul>
+
+<h2 id="tutorial-for-visualization">Tutorial for Visualization</h2>
+
+<ul>
+  <li><a href="../docs/tutorial4Vis#q--a-how-to-share-results-with-others-by-deploying-the-application-by-having-pre-generated-result-rdata-dataset-">Q &amp; A: How to share results with others by deploying the application by having pre-generated result RData dataset ?</a></li>
+</ul>
+
+<h2 id="other-faq">Other FAQ</h2>
+
+<h3 id="q-what-to-do-if-there-is-an-error-message-maximum-upload-size-exceeded-">Q: What to do if there is an error message maximum upload size exceeded ?</h3>
+
+<p><strong>A</strong>: If there is an error message maximum upload size exceeded, please set <code class="highlighter-rouge">options(shiny.maxRequestSize = 1000*1024^2)</code> to a larger number. 
+Here the options means the maximum request size is 1000mb.</p>
+
+<h3 id="q-how-to-publish-the-application-to-a-remote-server-">Q: How to publish the application to a remote server ?</h3>
+
+<p><strong>A</strong>: If user could run the server locally, he could directly call the function to open an application (check the Q&amp;A above).</p>
+
+<p>If deploy remotely, run the following code before deploying the application:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">## define repo directory, here version 3.9 matches the R version 3.6.1</span><span class="w">
+</span><span class="n">local</span><span class="p">({</span><span class="w">
+  </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">getOption</span><span class="p">(</span><span class="s2">"repos"</span><span class="p">)</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"CRAN"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://cran.rstudio.com/"</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"BioCsoft"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://bioconductor.org/packages/3.9/bioc"</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"BioCann"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://bioconductor.org/packages/3.9/data/annotation"</span><span class="w">
+  </span><span class="n">r</span><span class="p">[</span><span class="s2">"BioCexp"</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"https://bioconductor.org/packages/3.9/data/experiment"</span><span class="w">
+  </span><span class="n">options</span><span class="p">(</span><span class="n">repos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w">
+</span><span class="p">})</span><span class="w">
+</span></code></pre></div></div>
+<p>Deploy the first application for hidden driver analysis:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">search_network_path</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s1">'data/network_txt/'</span><span class="w"> </span><span class="c1">## need to modify</span><span class="w">
+</span><span class="n">search_eSet_path</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s1">'data/eSet_RData/'</span><span class="w"> </span><span class="c1">## need to modify</span><span class="w">
+</span><span class="n">pre_project_main_dir</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s1">'MR_result/'</span><span class="w"> </span><span class="c1">## need to modify</span><span class="w">
+</span><span class="n">options</span><span class="p">(</span><span class="n">shiny.maxRequestSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="o">*</span><span class="m">1024</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="c1">## set size for uploading files</span><span class="w">
+</span><span class="n">appDir</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">system.file</span><span class="p">(</span><span class="s1">'app_4MR/'</span><span class="p">,</span><span class="n">package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"NetBIDshiny"</span><span class="p">)</span><span class="w"> </span><span class="c1">## the directory for server.R and ui.R</span><span class="w">
+</span><span class="n">rsconnect</span><span class="o">::</span><span class="n">deployApp</span><span class="p">(</span><span class="n">appDir</span><span class="o">=</span><span class="n">appDir</span><span class="p">,</span><span class="n">appName</span><span class="o">=</span><span class="s1">'NetBIDshiny_forMR'</span><span class="p">,</span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'shinyapps.io'</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Deploy the second application for result visualization:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">search_path</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s1">'data/project_RData'</span><span class="w"> </span><span class="c1">## need to modify</span><span class="w">
+</span><span class="n">options</span><span class="p">(</span><span class="n">shiny.maxRequestSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="o">*</span><span class="m">1024</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="c1">## set size for uploading files</span><span class="w">
+</span><span class="n">appDir</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">system.file</span><span class="p">(</span><span class="s1">'app_4Vis/'</span><span class="p">,</span><span class="n">package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"NetBIDshiny"</span><span class="p">)</span><span class="w"> </span><span class="c1">## the directory for server.R and ui.R</span><span class="w">
+</span><span class="n">rsconnect</span><span class="o">::</span><span class="n">deployApp</span><span class="p">(</span><span class="n">appDir</span><span class="o">=</span><span class="n">appDir</span><span class="p">,</span><span class="n">appName</span><span class="o">=</span><span class="s1">'NetBIDshiny_forVis1'</span><span class="p">,</span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'shinyapps.io'</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>In the current <code class="highlighter-rouge">server.R</code>, there will be one line to install the <code class="highlighter-rouge">NetBID2</code> packages. 
+Please pay attention if there will be some update on the github repo.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">devtools</span><span class="o">::</span><span class="n">install_github</span><span class="p">(</span><span class="s2">"jyyulab/NetBID2"</span><span class="p">,</span><span class="n">ref</span><span class="o">=</span><span class="s1">'master'</span><span class="p">,</span><span class="n">dependencies</span><span class="o">=</span><span class="s1">'Depends'</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If user want more modification, he could copy the code to another directory for further modification.</p>
+
+<p><strong>Attention</strong>, the code script is not allowed for commercial usage without requiring for permission.</p>
+
+<hr />
+
+
+
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

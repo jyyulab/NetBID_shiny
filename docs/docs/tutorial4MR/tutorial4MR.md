@@ -153,7 +153,7 @@ There are three options for running `NetBIDshiny.run4MR()`.
 
 -- **project_main_dir**: absolute path of the main working directory for driver analysis. If NULL, the server will add a new button for user to select the output directory. Default is NULL. If not NULL, there will be an additional link in the result page for downloading the zip file containing all information.
 
-If user want to deploy the application with pre-generated network files, he could run the application like this (below is the screenshot for the data directory for our online version):
+If user want to deploy the application with pre-generated network files, he could run the application like this (below is the screenshot for the data directory for our online version, the code is slightly different to the code in the package and we use the original code for deploying):
 
 ![f11](f11.png)
 

@@ -14,7 +14,6 @@ library(fs)
 library(V8)
 library(zip)
 
-options(shiny.maxRequestSize = 1000*1024^2)
 
 #' @title \code{NetBIDshiny.run4Vis} is a function to run a shiny app for NetBID2 result visualization.
 #' @description \code{NetBIDshiny.run4Vis} is a shiny app for NetBID2 result visualization. 
@@ -27,7 +26,9 @@ options(shiny.maxRequestSize = 1000*1024^2)
 #' If set to NULL, only 'Current Directory' will be used.
 #' @export
 NetBIDshiny.run4Vis <- function(search_path=c('Current Directory','Home')){
+  options(shiny.maxRequestSize = 1000*1024^2)
   .GlobalEnv$search_path <- search_path
+  if(exists('analysis.par',envir=.GlobalEnv)==TRUE) rm(analysis.par,envir=.GlobalEnv)
   shiny::shinyApp(ui = ui_Vis, server = server_Vis)
 }
 
@@ -52,6 +53,7 @@ NetBIDshiny.run4Vis <- function(search_path=c('Current Directory','Home')){
 #' If not NULL, there will be an additional link in the result page for downloading the zip file containing all information.
 #' @export
 NetBIDshiny.run4MR <- function(search_network_path=c('Current Directory','Home'),search_eSet_path=c('Current Directory','Home'),project_main_dir=NULL){
+  options(shiny.maxRequestSize = 1000*1024^2)
   .GlobalEnv$search_network_path <- search_network_path
   .GlobalEnv$search_eSet_path <- search_eSet_path
   .GlobalEnv$pre_project_main_dir <- project_main_dir
