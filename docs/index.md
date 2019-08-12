@@ -21,7 +21,7 @@ Online tutorial and documentation of NetBIDshiny.
 
 NetBIDshiny is a R Shiny web app, it provides an interactive online visualization tool for further analysis of drivers obtained from NetBID2.
 
-NetBID2 is the upgraded second version of NetBID, which is a data-driven systems biology algorithm, using network-based Bayesian inference approach to find drivers from transcriptomics, proteomics and phosphoproteomics data. The NetBID2 R package can be found at [NetBID2](https://github.com/jyyulab/NetBID-dev), and online tutorial can be found at [NetBID2 tutorial](https://jyyulab.github.io/NetBID-dev/).
+NetBID2 is the upgraded second version of NetBID, which is a data-driven systems biology algorithm, using network-based Bayesian inference approach to find drivers from transcriptomics, proteomics and phosphoproteomics data. The NetBID2 R package can be found at [NetBID2](https://github.com/jyyulab/NetBID), and online tutorial can be found at [NetBID2 tutorial](https://jyyulab.github.io/NetBID/).
 
 ---
 

@@ -2,8 +2,7 @@
 title: "FAQ"
 layout: default
 nav_order: 4
-permalink: ../docs/FAQ
-has_children: no
+permalink: /docs/FAQ
 ---
 
 ## Tutorial for Hidden driver (master regulator) estimation

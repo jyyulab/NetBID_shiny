@@ -5,7 +5,7 @@ Version: 0.1.0
 Authors@R: person('Xinran', 'Dong', email = 'xinran.dong@stjude.org', role = c('aut', 'cre'))
 Maintainer@R: person('Xinran', 'Dong', email = 'xinran.dong@stjude.org')
 Description: A shiny app for assisting NetBID2 (data-driven context-specific network and Bayesian inference, version II) analysis, including the master regulator estimation and result visualization.
-License: GPL (>= 2)
+License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: 

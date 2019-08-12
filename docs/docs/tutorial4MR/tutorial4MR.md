@@ -2,8 +2,7 @@
 title: "Tutorial for hidden driver estimation"
 layout: default
 nav_order: 1
-permalink: ../docs/tutorial4MR
-has_children: no
+permalink: /docs/tutorial4MR
 ---
 
 # Tutorial for Hidden driver (master regulator) estimation

@@ -2,8 +2,7 @@
 title: "Tutorial for Visualization"
 layout: default
 nav_order: 2
-permalink: ../docs/tutorial4Vis
-has_children: no
+permalink: /docs/tutorial4Vis
 ---
 
 # Tutorial for Visualization
