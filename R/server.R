@@ -950,9 +950,9 @@ server_Vis <- function(input, output,session) {
       br(),
       a('Online manual: https://jyyulab.github.io/NetBID_shiny/',href='https://jyyulab.github.io/NetBID_shiny/',target='_',style = "font-size:120%;"),
       h4('Current NetBID algorithm, NetBID2: data-driven Network-based Bayesian Inference of Drivers, Version II'),
-      a('Github address: https://github.com/jyyulab/NetBID-dev',href='https://github.com/jyyulab/NetBID-dev/',target='_',style = "font-size:120%;"),
+      a('Github address: https://github.com/jyyulab/NetBID-dev',href='https://github.com/jyyulab/NetBID/',target='_',style = "font-size:120%;"),
       br(),
-      a('Online manual: https://jyyulab.github.io/NetBID-dev/',href='https://jyyulab.github.io/NetBID-dev/',target='_',style = "font-size:120%;"),shiny::hr(),
+      a('Online manual: https://jyyulab.github.io/NetBID-dev/',href='https://jyyulab.github.io/NetBID/',target='_',style = "font-size:120%;"),shiny::hr(),
       shiny::HTML("<p>\u00A9 2019 St. Jude Children\'s Research Hospital</p>
            <p>Contact: <a href='https://stjuderesearch.org/site/lab/yu/contact',target='_'>YuLab</a> <a href='https://github.com/jyyulab/NetBID_shiny',target='_'>Github</a></p>
            <p>Email: xinran.dong@stjude.org or xinran.dong@foxmail.com</p>")
@@ -1437,7 +1437,8 @@ server_MR <- function(input, output,session){
       return(fn)
     },
     content = function(fname) {
-      files2zip <- dir(sprintf('%s/%s/',use_data$project_main_dir,use_data$project_name), full.names = TRUE)
+      out_path <- sprintf('%s/%s/',use_data$project_main_dir,use_data$project_name)
+      files2zip <- dir(out_path, full.names = TRUE)
       zip::zip(zipfile=fname, files=files2zip)
     },
     contentType = "application/zip"

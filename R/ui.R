@@ -24,10 +24,8 @@ ui_Vis <- fluidPage(
            shiny::HTML("<p style='color:#8A0808;font-size:70%'>Note:The RData file must contain a list object <b>analysis.par</b> containing required elements (detailed check online tutorial)</p>"),
            div(shiny::htmlOutput('summaryProject')),  shiny::hr(),
            div(shiny::htmlOutput('initial_para'),style='font-size:80%'),  shiny::hr(),
-           fluidRow(
-             column(4,offset=1,actionButton('loadButton', 'Load/Reload the uploaded RData')),
-             column(4,offset=1,actionButton('loadDemoButton', 'Load/Reload the Demo RData'))
-           ),
+           actionButton('loadButton', 'Load/Reload the uploaded RData'),
+           actionButton('loadDemoButton', 'Load the Demo Data',style="height:80%;font-size:80%;background:grey"),
            shiny::hr(),
            div(shiny::htmlOutput('error_message'),style='color:red'),
            div(uiOutput("masterTable.ui")),
