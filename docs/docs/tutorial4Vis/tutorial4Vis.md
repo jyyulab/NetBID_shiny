@@ -43,8 +43,12 @@ Here, the goal is to **find potential drivers in Group4 compared to other subtyp
   - [BUBBLE_PLOT: get the functional annotation for the top drivers and their target genes](#bubble_plot-get-the-functional-annotation-for-the-top-drivers-and-their-target-genes)
 
   - [TARGET_NET: show the sub-network structure of one selected driver](#target_net-show-the-sub-network-structure-of-one-selected-driver)
+  
+  - [TARGET_FUNCTION_ENRICH_PLOT: get the functional annotation for the driver's target genes](#target_function_enrich_plot-get-the-functional-annotation-for-the-drivers-target-genes)
 
   - [CATEGORY_BOXPLOT: get the distribution of one driver’s expression/activity value across group samples](#category_boxplot-get-the-distribution-of-one-drivers-expressionactivity-value-across-group-samples)
+  
+  - [DRIVER_GSEA_PLOT: get the GSEA plot for one driver](#driver_gsea_plot-get-the-gsea-plot-for-one-driver)
 
 - [Q & A: How to share results with others by deploying the application by having pre-generated result RData dataset ?](#q--a-how-to-share-results-with-others-by-deploying-the-application-by-having-pre-generated-result-rdata-dataset-)
 
@@ -201,11 +205,25 @@ If add one more interested driver, it will draw a shared sub-network with overla
 
 ![f12](f12.png)
 
+### TARGET_FUNCTION_ENRICH_PLOT: get the functional annotation for the driver's target genes
+
+Users can choose which driver's target genes for gene set enrichment analysis and visualization.
+
+![f15](f15.png)
+
+
 ### CATEGORY_BOXPLOT: get the distribution of one driver's expression/activity value across group samples
 
 Users can choose which phenotype feature to display.
 
 ![f13](f13.png)
+
+### DRIVER_GSEA_PLOT: get the GSEA plot for one driver
+
+Users can choose which one driver to draw the GSEA plot.
+
+![f16](f16.png)
+
 
 ## Q & A: How to share results with others by deploying the application by having pre-generated result RData dataset ?
 

@@ -11,7 +11,8 @@ library(zip)
 jscode <- "shinyjs.refresh=function(){history.go(0);};"
 
 ui_Vis <- fluidPage(
-  useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
+  #useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
+  useShinyjs(),extendShinyjs(text = "shinyjs.refresh=function(){history.go(0);};"),
   theme = shinytheme("sandstone"),
   titlePanel('NetBIDShiny for result visualization'),
   sidebarPanel(width=5,
@@ -42,7 +43,9 @@ ui_Vis <- fluidPage(
                          tabPanel("Function_Enrich_Plot", div(shiny::htmlOutput("FunctionEnrichPlot_para"),style = "font-size:80%;margin-top:2%")),
                          tabPanel("Bubble_Plot", div(shiny::htmlOutput("BubblePlot_para"),style = "font-size:80%;margin-top:2%")),
                          tabPanel("Target_Net", div(shiny::htmlOutput("TargetNetPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("Target_Function_Enrich_Plot", div(shiny::htmlOutput("TargetFunctionEnrichPlot_para"),style = "font-size:80%;margin-top:2%")),
                          tabPanel("Category_BoxPlot", div(shiny::htmlOutput("CategoryBoxPlot_para"),style = "font-size:80%;margin-top:2%")),
+                         tabPanel("Driver_GSEA_Plot", div(shiny::htmlOutput("DriverGSEAPlot_para"),style = "font-size:80%;margin-top:2%")),
                          tabPanel("About", div(shiny::htmlOutput("about.ui"),style = "font-size:80%;margin-top:2%"))
                        ),
       div(uiOutput("plot.ui")),
@@ -54,7 +57,8 @@ ui_Vis <- fluidPage(
 )
 #
 ui_MR <- fluidPage(
-  useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
+  #useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
+  useShinyjs(),extendShinyjs(text = "shinyjs.refresh=function(){history.go(0);};"),
   theme = shinytheme("sandstone"),
   titlePanel('NetBIDShiny for hidden driver estimation'),
   sidebarPanel(width=5,

@@ -16,7 +16,7 @@ server_Vis <- function(input, output,session) {
   use_data <- shiny::reactiveValues(ori_ms_tab=NULL,ms_tab=NULL,tmp_ms_tab=NULL,use_para='',basic_info='',
                              project.name=NULL,main.dir=NULL,
                              cal.eset=NULL,merge.ac.eset=NULL,merge.network=NULL,DE=NULL,DA=NULL,
-                             transfer_tab=NULL, all_gs2gene=NULL, all_gs2gene_info=NULL,
+                             transfer_tab=NULL, main_id_type=NULL,all_gs2gene=NULL, all_gs2gene_info=NULL,
                              all_comp=NULL,choose_comp=NULL,plot_height=500,plot_width=800,
                              out.dir.DATA=system.file('demo1','driver/DATA/analysis.par.Step.ms-tab.RData',package = "NetBID2")) ## global variables
   control_para <- shiny::reactiveValues(doloadData = FALSE, doplot=FALSE) ## control parameters
@@ -54,6 +54,8 @@ server_Vis <- function(input, output,session) {
   shiny::observeEvent(input$doFunctionEnrichPlot, {control_para$doplot <- 'doFunctionEnrichPlot'}) #6
   shiny::observeEvent(input$doBubblePlot, {control_para$doplot <- 'doBubblePlot'}) #7
   shiny::observeEvent(input$doNetBIDPlot, {control_para$doplot <- 'doNetBIDPlot'}) #8
+  shiny::observeEvent(input$doTargetFunctionEnrichPlot, {control_para$doplot <- 'doTargetFunctionEnrichPlot'}) #9
+  shiny::observeEvent(input$doDriverGSEAPlot, {control_para$doplot <- 'doDriverGSEAPlot'}) #10
 
   ################
   # functions
@@ -71,6 +73,31 @@ server_Vis <- function(input, output,session) {
       if(top_strategy=='DOWN') ms_tab <- tmp_ms_tab_down[1:min(top_num,nrow(tmp_ms_tab_down)),]
     }
     return(ms_tab)
+  }
+  get_z2p <- function(x,use_star=FALSE,digit_num=2){
+    x[which(is.na(x)==TRUE)] <- 0
+    #if(is.na(x[1])==TRUE) return('NA')
+    x <- abs(x)
+    x[which(is.na(x)==TRUE)] <- 0 ##
+    if(base::max(x)<5){
+      use_pv <- 1-pnorm(x)
+      use_p <- format(use_pv,digits=digit_num,scientific = TRUE)
+    }else{
+      low_p <- .Machine$double.xmin
+      low_z <- sapply(10^(-(1:(1+-log10(low_p)))),combinePvalVector)
+      use_pv <- sapply(x,function(x1){
+        low_z[2,which(low_z[1,]>=x1)[1]]}
+      )
+      use_p <- format(use_pv, digits=3,scientific = TRUE)
+      use_p[which(use_p=='NA')] <- '<1e-308'
+      use_p <- as.character(use_p)
+    }
+    x_star <- rep('',length.out=base::length(use_pv))
+    x_star[which(use_pv<0.05)] <-'*'
+    x_star[which(use_pv<0.01)] <-'**'
+    x_star[which(use_pv<0.001)] <-'***'
+    if(use_star==TRUE) use_p<-paste0(use_p,x_star)
+    return(use_p)
   }
   ################
   # load the data
@@ -91,50 +118,56 @@ server_Vis <- function(input, output,session) {
       load(inFile1$datapath)
     }
     #
-    ms_tab <- analysis.par$final_ms_tab
-    col_class <- unlist(lapply(ms_tab,class))
-    w1 <- which(col_class=='numeric')
-    for(i in w1) ms_tab[,i] <- signif(ms_tab[,i],digits=3)
-    use_data$project.name <- analysis.par$project.name
-    use_data$main.dir <- analysis.par$main.dir
-    use_data$ms_tab <- ms_tab
-    use_data$ori_ms_tab <- ms_tab
-    use_data$cal.eset <- analysis.par$cal.eset
-    use_data$merge.ac.eset <- analysis.par$merge.ac.eset
-    use_data$merge.network <- analysis.par$merge.network$target_list
-    use_data$DE <- analysis.par$DE
-    use_data$DA <- analysis.par$DA
-    all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
-    all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
-    use_data$all_comp <- all_comp
-    use_data$choose_comp <- NULL
-    print('Finish loading the dataset')
-    if('transfer_tab' %in% names(analysis.par)) use_data$transfer_tab <- analysis.par$transfer_tab
+    shiny::withProgress(message='processing',value=0.3,{
+      ms_tab <- analysis.par$final_ms_tab
+      col_class <- unlist(lapply(ms_tab,class))
+      w1 <- which(col_class=='numeric')
+      for(i in w1) ms_tab[,i] <- signif(ms_tab[,i],digits=3)
+      use_data$project.name <- analysis.par$project.name
+      use_data$main.dir <- analysis.par$main.dir
+      use_data$ms_tab <- ms_tab
+      use_data$ori_ms_tab <- ms_tab
+      use_data$cal.eset <- analysis.par$cal.eset
+      use_data$merge.ac.eset <- analysis.par$merge.ac.eset
+      use_data$merge.network <- analysis.par$merge.network$target_list
+      use_data$DE <- analysis.par$DE
+      use_data$DA <- analysis.par$DA
+      all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
+      all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
+      use_data$all_comp <- all_comp
+      use_data$choose_comp <- NULL
+      print('Finish loading the dataset')
+      shiny::incProgress(0.3, detail = 'Finish loading the dataset !')
+      if('transfer_tab' %in% names(analysis.par)) use_data$transfer_tab <- analysis.par$transfer_tab
+    })
   })
   # load in demo data
   loadDemoData <- shiny::reactive({
     analysis.par <- list()
     #analysis.par$out.dir.DATA <- system.file('demo1','driver/DATA/',package = "NetBID2")
     analysis.par$out.dir.DATA <-use_data$out.dir.DATA
-    load(analysis.par$out.dir.DATA)
-    ms_tab <- analysis.par$final_ms_tab
-    col_class <- unlist(lapply(ms_tab,class))
-    w1 <- which(col_class=='numeric')
-    for(i in w1) ms_tab[,i] <- signif(ms_tab[,i],digits=3)
-    use_data$project.name <- analysis.par$project.name
-    use_data$main.dir <- analysis.par$main.dir
-    use_data$ms_tab <- ms_tab
-    use_data$ori_ms_tab <- ms_tab
-    use_data$cal.eset <- analysis.par$cal.eset
-    use_data$merge.ac.eset <- analysis.par$merge.ac.eset
-    use_data$merge.network <- analysis.par$merge.network$target_list
-    use_data$DA <- analysis.par$DA
-    use_data$DE <- analysis.par$DE
-    all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
-    all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
-    use_data$all_comp <- all_comp
-    use_data$choose_comp <- NULL
-    if('transfer_tab' %in% names(analysis.par)) use_data$transfer_tab <- analysis.par$transfer_tab
+    shiny::withProgress(message='processing',value=0.3,{
+      load(analysis.par$out.dir.DATA)
+      ms_tab <- analysis.par$final_ms_tab
+      col_class <- unlist(lapply(ms_tab,class))
+      w1 <- which(col_class=='numeric')
+      for(i in w1) ms_tab[,i] <- signif(ms_tab[,i],digits=3)
+      use_data$project.name <- analysis.par$project.name
+      use_data$main.dir <- analysis.par$main.dir
+      use_data$ms_tab <- ms_tab
+      use_data$ori_ms_tab <- ms_tab
+      use_data$cal.eset <- analysis.par$cal.eset
+      use_data$merge.ac.eset <- analysis.par$merge.ac.eset
+      use_data$merge.network <- analysis.par$merge.network$target_list
+      use_data$DA <- analysis.par$DA
+      use_data$DE <- analysis.par$DE
+      all_comp <- colnames(ms_tab)[grep('Z.',colnames(ms_tab))]
+      all_comp <- unique(gsub('Z.(.*)','\\1',all_comp))
+      use_data$all_comp <- all_comp
+      use_data$choose_comp <- NULL
+      shiny::incProgress(0.3, detail = 'Finish loading the dataset !')
+      if('transfer_tab' %in% names(analysis.par)) use_data$transfer_tab <- analysis.par$transfer_tab
+    })
   })
   # fp
   output$filepaths_choose_ms_tab_RData_file <- shiny::renderUI({
@@ -216,32 +249,38 @@ server_Vis <- function(input, output,session) {
       control_para$doloadData <- TRUE
     }
     if(control_para$doloadData=='doinitialload' | control_para$doloadData=='doinitialdemoload'){
-      use_spe=input$use_spe;use_level=input$use_level;ori_from_type=input$choose_main_id_type;
-      print(use_data$basic_info)
-      if(use_data$basic_info != ''){
-        use_spe   <- gsub('Choose species:(.*); analysis level:(.*); main id type:(.*)','\\1',use_data$basic_info)
-        use_level <- gsub('Choose species:(.*); analysis level:(.*); main id type:(.*)','\\2',use_data$basic_info)
-        ori_from_type <- gsub('Choose species:(.*); analysis level:(.*); main id type:(.*)','\\3',use_data$basic_info)
-      }
-      if(is.null(use_data$all_gs2gene)==TRUE | input$use_spe != use_spe){
-        gs.preload(use_spe=input$use_spe)
-        use_data$all_gs2gene <- all_gs2gene
-        use_data$all_gs2gene_info <- all_gs2gene_info
-      }
-      from_type <- input$choose_main_id_type
-      if(from_type=='other') from_type <- input$other_main_id_type
-      if(is.null(use_data$transfer_tab)==TRUE | input$use_level != use_level | from_type!=ori_from_type){
-        use_genes <- unique(unlist(lapply(use_data$merge.network,function(x)x$target)))
-        print(str(use_genes))
-        print('Original RData do not contain gene ID transfer table, the program will automatically generate it, please wait !')
-        db.preload(use_spe=input$use_spe,use_level=input$use_level)
-        transfer_tab <- get_IDtransfer2symbol2type(from_type = from_type,use_genes=use_genes,use_level=input$use_level) ## get transfer table !!!
-        use_data$transfer_tab <- transfer_tab
-      }
-      use_data$ms_tab <- use_data$ori_ms_tab
-      use_data$basic_info <- sprintf('Choose species:%s; analysis level:%s; main id type:%s',input$use_spe,input$use_level, from_type)
-      use_data$use_para <- ''
-      control_para$doloadData <- TRUE
+      shiny::withProgress(message='preparing master table',value=0.3,{
+        use_spe=input$use_spe;use_level=input$use_level;ori_from_type=input$choose_main_id_type;
+        print(use_data$basic_info)
+        if(use_data$basic_info != ''){
+          use_spe   <- gsub('Choose species:(.*); analysis level:(.*); main id type:(.*)','\\1',use_data$basic_info)
+          use_level <- gsub('Choose species:(.*); analysis level:(.*); main id type:(.*)','\\2',use_data$basic_info)
+          ori_from_type <- gsub('Choose species:(.*); analysis level:(.*); main id type:(.*)','\\3',use_data$basic_info)
+        }
+        if(is.null(use_data$all_gs2gene)==TRUE | input$use_spe != use_spe){
+          gs.preload(use_spe=input$use_spe)
+          use_data$all_gs2gene <- all_gs2gene
+          use_data$all_gs2gene_info <- all_gs2gene_info
+        }
+        from_type <- input$choose_main_id_type
+        if(from_type=='other') from_type <- input$other_main_id_type
+        shiny::incProgress(0.1, detail = 'preparing transfer table')
+        if(is.null(use_data$transfer_tab)==TRUE | input$use_level != use_level | from_type!=ori_from_type){
+          use_genes <- unique(unlist(lapply(use_data$merge.network,function(x)x$target)))
+          print(str(use_genes))
+          print('Original RData do not contain gene ID transfer table, the program will automatically generate it, please wait !')
+          db.preload(use_spe=input$use_spe,use_level=input$use_level)
+          transfer_tab <- get_IDtransfer2symbol2type(from_type = from_type,use_genes=use_genes,use_level=input$use_level) ## get transfer table !!!
+          use_data$transfer_tab <- transfer_tab
+        }
+        shiny::incProgress(0.3, detail = 'finish preparing transfer table')
+        use_data$ms_tab <- use_data$ori_ms_tab
+        use_data$basic_info <- sprintf('Choose species:%s; analysis level:%s; main id type:%s',input$use_spe,input$use_level, from_type)
+        use_data$use_para <- ''
+        use_data$main_id_type <- from_type
+        control_para$doloadData <- TRUE
+        shiny::incProgress(0.3, detail = 'finish preparing master table')
+      })
     }
     use_data$ms_tab
   },rownames=FALSE,extensions = c('FixedColumns',"FixedHeader"),
@@ -253,7 +292,7 @@ server_Vis <- function(input, output,session) {
     )
   ################
   # draw options
-  # 1
+  #1
   output$VolcanoPlot_para <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
     #control_para$doplot <- FALSE    
@@ -299,7 +338,7 @@ server_Vis <- function(input, output,session) {
         ))
     )
   })
-  # 2
+  #2
   output$Heatmap_para <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
     if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
@@ -339,7 +378,7 @@ server_Vis <- function(input, output,session) {
         ))
     )
   })
-  # 3
+  #3
   output$CategoryBoxPlot_para <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
     control_para$doplot <- FALSE    
@@ -356,7 +395,7 @@ server_Vis <- function(input, output,session) {
       )
     )
   })
-  # 4
+  #4
   output$TargetNetPlot_para <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
     control_para$doplot <- FALSE    
@@ -366,7 +405,7 @@ server_Vis <- function(input, output,session) {
       shiny::fluidRow(
                shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver4',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
                shiny::column(4,offset=0,shiny::selectInput(inputId='label_col4',label='choose shiny::column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
-               shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver4_2',label='choose the second driver to plot (optinal)',choices=all_driver,selected = all_driver[1]))
+               shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver4_2',label='choose the second driver to plot (optinal)',choices=c('',all_driver),selected=''))
       ),
       shiny::fluidRow(
                shiny::column(3,offset=0,shiny::checkboxInput(inputId='use_gene_symbol4',label='Display gene symbol',value = FALSE)),
@@ -493,7 +532,7 @@ server_Vis <- function(input, output,session) {
       p("NOTE: bubble plot will generate large size figures, please choose small top driver number or use download button to get the pdf format figure file !")
     )
   })
-  # 8
+  #8
   output$NetBIDPlot_para <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
     if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
@@ -518,6 +557,66 @@ server_Vis <- function(input, output,session) {
       )
     )
   })
+  #9
+  output$TargetFunctionEnrichPlot_para <- shiny::renderUI({
+    if(control_para$doloadData==FALSE) return()
+    control_para$doplot <- FALSE    
+    ms_tab <- use_data$ms_tab
+    all_driver <- ms_tab$originalID_label ## unique!!!
+    use_gs1 <- unique(cbind(all_gs2gene_info$Category,all_gs2gene_info$Category_Info))
+    use_gs2 <- unique(cbind(all_gs2gene_info$`Sub-Category`,all_gs2gene_info$`Sub-Category_Info`))[-1,]
+    use_gs1[,2] <- paste(use_gs1[,1],use_gs1[,2],sep=':')
+    use_gs2[,2] <- paste(use_gs2[,1],use_gs2[,2],sep=':')
+    shiny::tagList(
+      shiny::fluidRow(
+        shiny::column(2,offset=0,shiny::checkboxGroupInput(inputId='use_gs1_9',label='choose Category to analyze',choiceNames=use_gs1[,2],choiceValues=use_gs1[,1],selected ='H')),
+        shiny::column(3,offset=0,shiny::checkboxGroupInput(inputId='use_gs2_9',label='choose Sub-Category to analyze',choiceNames=use_gs2[,2],choiceValues=use_gs2[,1],
+                                                           selected =c('CP:BIOCARTA','CP:REACTOME','CP:KEGG'))),
+        shiny::column(7,offset=0,shiny::tagList(
+          shiny::fluidRow(shiny::column(3,offset=0,shiny::numericInput(inputId='min_gs_size9',label='minimum gene set size to analyze',value=5,min=0,max=NA)),
+                          shiny::column(3,offset=0,shiny::numericInput(inputId='max_gs_size9',label='maximum gene set size to analyze',value=300,min=0,max=NA)),
+                          shiny::column(3,offset=0,shiny::selectInput(inputId='Pv_adj9',label='P value adjusted strategy',
+                                                                      choices=c("fdr","BH","none","holm","hochberg","hommel", "bonferroni","BY"),selected='none')),
+                          shiny::column(3,offset=0,shiny::numericInput(inputId='Pv_thre9',label='P value threshold',value=0.1,min=0,max=1))
+          ),
+          shiny::fluidRow(
+            shiny::column(4,offset=0,shiny::numericInput(inputId='top_num9',label='number of top driver number (order by Z-statistics)',value=300,step=1,min=0,max=Inf)),
+            shiny::column(4,offset=0,shiny::numericInput(inputId='top_gs_num9',label='number of top gene set number (order by p-value)',value=30,step=1,min=0,max=Inf)),
+            shiny::column(4,offset=0,shiny::numericInput(inputId='h9',label='threshold for cluster',value=0.9,step=0.01,min=0,max=1))
+          ),
+          shiny::fluidRow(
+            shiny::column(4,offset=0,shiny::checkboxInput(inputId='cluster_gs9',label='whether or not to cluster gene sets',value = TRUE)),
+            shiny::column(4,offset=0,shiny::checkboxInput(inputId='cluster_gene9',label='whether or not to cluster genes gene symbol',value = TRUE))
+          ),
+          shiny::fluidRow(
+            shiny::column(6,offset=0,shiny::selectInput(inputId='choose_driver9',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
+            shiny::column(6,offset=0,shiny::actionButton(inputId='doTargetFunctionEnrichPlot',label='Draw Target FunctionEnrich Plot'))
+          )
+        ))),
+      p("")
+    )
+  })
+  #10
+  output$DriverGSEAPlot_para <- shiny::renderUI({
+    if(control_para$doloadData==FALSE) return()
+    control_para$doplot <- FALSE    
+    if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
+    ms_tab <- use_data$ms_tab
+    all_driver <- ms_tab$originalID_label ## unique!!!
+    uc <- gsub('(.*)_DA','\\1',use_data$choose_comp)
+    uc <- gsub('(.*)_DE','\\1',uc)
+    all_p_col <- intersect(colnames(use_data$DE[[uc]]),c('t','logFC','Z-statistics'))
+    shiny::tagList(
+      shiny::p(sprintf('You are focusing on %s',use_data$choose_comp)),
+      shiny::fluidRow(
+        shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver10',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
+        shiny::column(4,offset=0,shiny::selectInput(inputId='profile_col10',label='choose profile to plot',choices=all_p_col,selected = all_p_col[1])),
+        shiny::column(4,offset=0,shiny::actionButton(inputId='doDriverGSEAPlot',label='Draw Drive GSEA Plot'))
+      ),
+      p('NOTE: Only accepet originalID_label for its uniqueness, please search the the box in the left to get the label !')
+    )
+  })
+  
   ################
   # main plot # plotOutput('mainPlot',height=input$plot_height)
   output$plotPara <- shiny::renderUI({
@@ -596,6 +695,23 @@ server_Vis <- function(input, output,session) {
                shiny::column(4,offset=0,shiny::sliderInput('column_cex','shiny::column names cex',min=0.1,max=3,value=1)),
                shiny::column(4,offset=0,shiny::sliderInput('text_cex','text cex',min=0.1,max=3,value=1))
              )
+           ),
+           'doTargetFunctionEnrichPlot'=shiny::tagList(
+             shiny::fluidRow(
+               shiny::column(6,offset=0,shiny::sliderInput('plot_width9','plot_width(px)',min=100,max=2000,value=900)),
+               shiny::column(6,offset=0,shiny::sliderInput('plot_height9','plot_height(px)',min=100,max=2000,value=600))
+             ),
+             shiny::fluidRow(
+               shiny::column(4,offset=0,shiny::sliderInput('gs_cex9','gene set cex',min=0.1,max=3,value=0.7)),
+               shiny::column(4,offset=0,shiny::sliderInput('gene_cex9','gene cex',min=0.1,max=3,value=0.8)),
+               shiny::column(4,offset=0,shiny::sliderInput('pv_cex9','p-value cex',min=0.1,max=3,value=0.7))
+             )
+           ),
+           'doDriverGSEAPlot'=shiny::tagList(
+             shiny::fluidRow(
+               shiny::column(6,offset=0,shiny::sliderInput('plot_width10','plot_width(px)',min=100,max=2000,value=700)),
+               shiny::column(6,offset=0,shiny::sliderInput('plot_height10','plot_height(px)',min=100,max=2000,value=700))
+             )
            )
     )
   })
@@ -664,6 +780,7 @@ server_Vis <- function(input, output,session) {
       use_data$plot_width <- as.numeric(input$plot_width4)
       use_driver <- input$choose_driver4
       use_driver2 <- input$choose_driver4_2
+      if(use_driver2=='') use_driver2<-use_driver
       use_target <- use_data$merge.network[[use_driver]]
       edge_score <- use_target$MI*sign(use_target$spearman)
       names(edge_score) <- use_target$target
@@ -673,14 +790,14 @@ server_Vis <- function(input, output,session) {
         w1 <- which(names(edge_score) %in% use_data$transfer_tab[which(use_data$transfer_tab[,3]=='protein_coding'),1])
         edge_score <- edge_score[w1]
       }
-      if(input$use_gene_symbol4==TRUE) names(edge_score) <- get_name_transfertab(use_genes=names(edge_score),transfer_tab=use_data$transfer_tab)
+      if(input$use_gene_symbol4==TRUE) names(edge_score) <- get_name_transfertab(use_genes=names(edge_score),transfer_tab=use_data$transfer_tab,from_type=use_data$main_id_type,to_type='external_gene_name')
       if(use_driver2!=use_driver){
         use_target2 <- use_data$merge.network[[use_driver2]]
         edge_score2 <- use_target2$MI*sign(use_target2$spearman)
         names(edge_score2) <- use_target2$target
         z_col <- paste0('Z.',input$choose_comp)
         if(input$use_protein_coding4==TRUE){
-          w1 <- which(names(edge_score2) %in% use_data$transfer_tab[which(use_data$transfer_tab[,3]=='protein_coding'),1])
+          w1 <- which(names(edge_score2) %in% use_data$transfer_tab[which(use_data$transfer_tab[,grep('biotype',colnames(use_data$transfer_tab))[1]]=='protein_coding'),1])
           edge_score2 <- edge_score2[w1]
         }
         if(input$use_gene_symbol4==TRUE) names(edge_score2) <- get_name_transfertab(use_genes=names(edge_score2),transfer_tab=use_data$transfer_tab)
@@ -771,6 +888,49 @@ server_Vis <- function(input, output,session) {
                           DE_display_col = input$DE_display_col, z_col = "Z-statistics", digit_num = 2,
                           row_cex = input$row_cex, column_cex = input$column_cex, text_cex = input$text_cex, col_srt = 60)
     }
+    if(control_para$doplot=='doTargetFunctionEnrichPlot'){ # 9
+      use_data$plot_height <- as.numeric(input$plot_height9)
+      use_data$plot_width <- as.numeric(input$plot_width9)
+      use_driver <- input$choose_driver9
+      use_target <- use_data$merge.network[[use_driver]]
+      target_gene <- use_target$target
+      target_gene <- get_name_transfertab(use_genes=target_gene,transfer_tab=use_data$transfer_tab,from_type=use_data$main_id_type,to_type='external_gene_name')
+      funcEnrich_res <- funcEnrich.Fisher(input_list = target_gene, bg_list = unique(use_data$transfer_tab[,'external_gene_name']),
+                                          use_gs = c(input$use_gs1_9,input$use_gs2_9),
+                                          min_gs_size = input$min_gs_size9, max_gs_size = input$max_gs_size9,
+                                          Pv_adj = input$Pv_adj9, Pv_thre = input$Pv_thre9)
+      res1 <- draw.funcEnrich.cluster(funcEnrich_res = funcEnrich_res, top_number = input$top_gs_num9,
+                                      Pv_col = "Ori_P", name_col = "#Name",
+                                      item_col = "Intersected_items", Pv_thre = input$Pv_thre9, gs_cex = input$gs_cex9,
+                                      gene_cex = input$gene_cex9, pv_cex = input$pv_cex9, main = "", h = input$h9,
+                                      cluster_gs = input$cluster_gs9, cluster_gene = input$cluster_gene9,
+                                      use_genes = NULL, return_mat = FALSE)
+    }
+    if(control_para$doplot=='doDriverGSEAPlot'){ # 10
+      use_data$plot_height <- as.numeric(input$plot_height10)
+      use_data$plot_width <- as.numeric(input$plot_width10)
+      use_driver <- input$choose_driver10
+      use_target <- use_data$merge.network[[use_driver]]
+      target_gene <- use_target$target
+      target_direction <- sign(use_target$spearman)
+      uc <- gsub('(.*)_DA','\\1',use_data$choose_comp)
+      uc <- gsub('(.*)_DE','\\1',uc)
+      pf <- use_data$DE[[uc]][,input$profile_col10]
+      names(pf) <- use_data$DE[[uc]]$ID
+      ms_tab <- use_data$ms_tab
+      z_col <- paste0('Z.',use_data$choose_comp)
+      z_val <- ms_tab[use_driver,z_col]
+      annotation <- sprintf('P.Value:%s',get_z2p(z_val))
+      G1 <- gsub('(.*).Vs.(.*)_DA',"\\1",use_data$choose_comp)
+      G0 <- gsub('(.*).Vs.(.*)_DA',"\\2",use_data$choose_comp)
+      G1 <- gsub(" $",'',G1)
+      G0 <- gsub(" $",'',G0)
+      print(str(pf));print(str(target_gene));print(str(target_direction));print(G1);print(G0);print(z_val)
+      draw.GSEA(rank_profile = pf, use_genes = target_gene,
+                use_direction = target_direction, main = ms_tab[use_driver,'gene_label'], pdf_file = NULL,
+                annotation = annotation, annotation_cex = 1.2, left_annotation = sprintf('High in %s',G1),
+                right_annotation = sprintf('High in %s',G0))
+    }
     #
   },height = use_data$plot_height,width=use_data$plot_width)))})
   ########################
@@ -842,6 +1002,7 @@ server_Vis <- function(input, output,session) {
       if(control_para$doplot=='doTargetNetPlot'){ # 4
         use_driver <- input$choose_driver4
         use_driver2 <- input$choose_driver4_2
+        if(use_driver2=='') use_driver2<-use_driver
         use_target <- use_data$merge.network[[use_driver]]
         edge_score <- use_target$MI*sign(use_target$spearman)
         names(edge_score) <- use_target$target
@@ -930,6 +1091,49 @@ server_Vis <- function(input, output,session) {
                             top_number = input$top_number8, DA_display_col = input$DA_display_col,
                             DE_display_col = input$DE_display_col, z_col = "Z-statistics", digit_num = 2,
                             row_cex = input$row_cex, column_cex = input$column_cex, text_cex = input$text_cex, col_srt = 60,pdf_file = file)
+      }
+      if(control_para$doplot=='doTargetFunctionEnrichPlot'){ # 9
+        use_data$plot_height <- as.numeric(input$plot_height9)
+        use_data$plot_width <- as.numeric(input$plot_width9)
+        use_driver <- input$choose_driver9
+        use_target <- use_data$merge.network[[use_driver]]
+        target_gene <- use_target$target
+        target_gene <- get_name_transfertab(use_genes=target_gene,transfer_tab=use_data$transfer_tab,from_type=use_data$main_id_type,to_type='external_gene_name')
+        funcEnrich_res <- funcEnrich.Fisher(input_list = target_gene, bg_list = unique(use_data$transfer_tab[,'external_gene_name']),
+                                            use_gs = c(input$use_gs1_9,input$use_gs2_9),
+                                            min_gs_size = input$min_gs_size9, max_gs_size = input$max_gs_size9,
+                                            Pv_adj = input$Pv_adj9, Pv_thre = input$Pv_thre9)
+        res1 <- draw.funcEnrich.cluster(funcEnrich_res = funcEnrich_res, top_number = input$top_gs_num9,
+                                        Pv_col = "Ori_P", name_col = "#Name",
+                                        item_col = "Intersected_items", Pv_thre = input$Pv_thre9, gs_cex = input$gs_cex9,
+                                        gene_cex = input$gene_cex9, pv_cex = input$pv_cex9, main = "", h = input$h9,
+                                        cluster_gs = input$cluster_gs9, cluster_gene = input$cluster_gene9,
+                                        use_genes = NULL, return_mat = FALSE,pdf_file = file)
+      }
+      if(control_para$doplot=='doDriverGSEAPlot'){ # 10
+        use_data$plot_height <- as.numeric(input$plot_height10)
+        use_data$plot_width <- as.numeric(input$plot_width10)
+        use_driver <- input$choose_driver10
+        use_target <- use_data$merge.network[[use_driver]]
+        target_gene <- use_target$target
+        target_direction <- sign(use_target$spearman)
+        uc <- gsub('(.*)_DA','\\1',use_data$choose_comp)
+        uc <- gsub('(.*)_DE','\\1',uc)
+        pf <- use_data$DE[[uc]][,input$profile_col10]
+        names(pf) <- use_data$DE[[uc]]$ID
+        ms_tab <- use_data$ms_tab
+        z_col <- paste0('Z.',use_data$choose_comp)
+        z_val <- ms_tab[use_driver,z_col]
+        annotation <- sprintf('P.Value:%s',get_z2p(z_val))
+        G1 <- gsub('(.*).Vs.(.*)_DA',"\\1",use_data$choose_comp)
+        G0 <- gsub('(.*).Vs.(.*)_DA',"\\2",use_data$choose_comp)
+        G1 <- gsub(" $",'',G1)
+        G0 <- gsub(" $",'',G0)
+        print(str(pf));print(str(target_gene));print(str(target_direction));print(G1);print(G0);print(z_val)
+        draw.GSEA(rank_profile = pf, use_genes = target_gene,
+                  use_direction = target_direction, main = ms_tab[use_driver,'gene_label'],
+                  annotation = annotation, annotation_cex = 1.2, left_annotation = sprintf('High in %s',G1),
+                  right_annotation = sprintf('High in %s',G0),pdf_file = file)
       }
     }
   )

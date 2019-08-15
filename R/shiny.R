@@ -14,6 +14,11 @@ library(fs)
 library(V8)
 library(zip)
 
+loadjs<- function() {
+  require(shinyjs)
+  useShinyjs()
+  extendShinyjs(text='shinyjs.refresh=function(){history.go(0);};')
+}
 
 #' @title \code{NetBIDshiny.run4Vis} is a function to run a shiny app for NetBID2 result visualization.
 #' @description \code{NetBIDshiny.run4Vis} is a shiny app for NetBID2 result visualization. 
@@ -29,7 +34,7 @@ NetBIDshiny.run4Vis <- function(search_path=c('Current Directory','Home')){
   options(shiny.maxRequestSize = 1000*1024^2)
   .GlobalEnv$search_path <- search_path
   if(exists('analysis.par',envir=.GlobalEnv)==TRUE) rm(analysis.par,envir=.GlobalEnv)
-  shiny::shinyApp(ui = ui_Vis, server = server_Vis)
+  shiny::shinyApp(ui = ui_Vis, server = server_Vis,onStart=loadjs)
 }
 
 #' @title \code{NetBIDshiny.run4MR} is a function to run a shiny app for NetBID2 master regulator identification.
@@ -58,7 +63,7 @@ NetBIDshiny.run4MR <- function(search_network_path=c('Current Directory','Home')
   .GlobalEnv$search_eSet_path <- search_eSet_path
   .GlobalEnv$pre_project_main_dir <- project_main_dir
   if(exists('analysis.par',envir=.GlobalEnv)==TRUE) rm(analysis.par,envir=.GlobalEnv)
-  shiny::shinyApp(ui = ui_MR, server = server_MR)
+  shiny::shinyApp(ui = ui_MR, server = server_MR,onStart=loadjs)
 }
 
 
