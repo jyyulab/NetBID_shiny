@@ -19,7 +19,7 @@ Online tutorial and documentation of NetBIDshiny.
 
 ## Overview
 
-NetBIDshiny is a R Shiny web app, it provides an interactive online visualization tool for further analysis of drivers obtained from NetBID2.
+NetBIDshiny is an R Shiny application, it provides interactive online hidden driver analysis and online visualization tools for further analysis of drivers obtained from NetBID2.
 
 NetBID2 is the upgraded second version of NetBID, which is a data-driven systems biology algorithm, using network-based Bayesian inference approach to find drivers from transcriptomics, proteomics and phosphoproteomics data. The NetBID2 R package can be found at [NetBID2](https://github.com/jyyulab/NetBID), and online tutorial can be found at [NetBID2 tutorial](https://jyyulab.github.io/NetBID/).
 
@@ -50,6 +50,15 @@ local({
   r["BioCexp"] <- "https://bioconductor.org/packages/3.9/data/experiment"
   options(repos = r)
 })
+# set repos, for R version 4.0, Bioconductor version 3.12
+local({
+  r <- getOption("repos")
+  r["CRAN"] <- "https://cran.rstudio.com/"
+  r["BioCsoft"] <- "https://bioconductor.org/packages/3.12/bioc"
+  r["BioCann"] <- "https://bioconductor.org/packages/3.12/data/annotation"
+  r["BioCexp"] <- "https://bioconductor.org/packages/3.12/data/experiment"
+  options(repos = r)
+})
 install_github("jyyulab/NetBID_shiny",ref='master') 
 ```
 
@@ -61,21 +70,29 @@ install.packages('NetBIDshiny_0.1.0.tar.gz',repos=NULL)
 
 ### Initiate the NetBIDShiny web app
 
-Call `NetBIDshiny.run4MR()` to initiate the app for master regulator identification or `NetBIDshiny.run4Vis()` to initiate the app for result visualization.
+Call `NetBIDshiny.run4MR()` to initiate the app for hidden driver identification and `NetBIDshiny.run4Vis()` to initiate the app for result visualization.
 
 ```R
 library(NetBIDshiny)
-NetBIDshiny.run4Vis()
 NetBIDshiny.run4MR()
+NetBIDshiny.run4Vis()
 ```
 
 Then open a browser and enter local url address (e.g: http://127.0.0.1:XXXX).
 
+Specially, for the `NetBIDshiny.run4Vis()`, user could put the RData path when calling the function and the server will automatically load the corresponding dataset. If leave to `NULL`, the demo dataset will be loaded. 
 
-### Online server (not available yet)
+```
+NetBIDshiny.run4Vis(load_data_path = system.file('demo1','driver/DATA/analysis.par.Step.ms-tab.RData',package = "NetBID2"))
+```
 
-The public online version of NetBIDshiny can be found here [under construction](#). 
-This doesn't require the local installation.
+### Online server
+
+The public online version of NetBIDshiny can be found here [NetBIDshiny_forMR](https://yulab-stjude.shinyapps.io/NetBIDshiny_forMR) and [NetBIDshiny_forVis](https://yulab-stjude.shinyapps.io/NetBIDshiny_forVis). 
+
+The online server contains pre-generated network files from TCGA, TARGET and GTEx and plenty of demo datasets. 
+
+For the detailed usage, please check [Tutorial for online server](docs/tutorial4Online). 
 
 ---
 
