@@ -12,10 +12,15 @@ jscode <- "shinyjs.refresh=function(){history.go(0);};"
 
 ui_Vis <- fluidPage(
   #useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
-  useShinyjs(),extendShinyjs(text = "shinyjs.refresh=function(){history.go(0);};"),
+  useShinyjs(),extendShinyjs(text = "shinyjs.refresh=function(){history.go(0);};",
+                             functions = c("shinyjs.refresh")),
   theme = shinytheme("sandstone"),
   titlePanel('NetBIDShiny for result visualization'),
   sidebarPanel(width=5,
+           h4('Current loaded dataset information',style='text-align:left'),
+           div(shiny::htmlOutput('summaryProject')),  shiny::hr(),
+           div(shiny::htmlOutput('initial_para'),style='font-size:80%'),  shiny::hr(),
+           div(shiny::htmlOutput('error_message'),style='color:red'),shiny::hr(),
            h4('Upload the dataset',style='text-align:left'),
            fileInput('ms_tab_RData_file',label='choose master table RData file',accept=c('.Rds','.RData','.Rdata')),
            h4('OR choose the local master table RData file',style='text-align:left'),
@@ -23,12 +28,11 @@ ui_Vis <- fluidPage(
                             'choose the RData file containing the master table', FALSE),
            shiny::htmlOutput('filepaths_choose_ms_tab_RData_file'),
            shiny::HTML("<p style='color:#8A0808;font-size:70%'>Note:The RData file must contain a list object <b>analysis.par</b> containing required elements (detailed check online tutorial)</p>"),
-           div(shiny::htmlOutput('summaryProject')),  shiny::hr(),
-           div(shiny::htmlOutput('initial_para'),style='font-size:80%'),  shiny::hr(),
-           actionButton('loadButton', 'Load/Reload the uploaded RData'),
-           actionButton('loadDemoButton', 'Load the Demo Data',style="height:80%;font-size:80%;background:grey"),
            shiny::hr(),
-           div(shiny::htmlOutput('error_message'),style='color:red'),
+           actionButton('loadButton', 'Load/Reload the uploaded RData'),
+           actionButton('loadDemoButton', 'Load/Reload the Demo Data',
+                        style="height:80%;font-size:80%;background:grey"),
+           shiny::hr(),
            div(uiOutput("masterTable.ui")),
            div(fluidRow(column(12,div(DT::dataTableOutput("ms_table"), style = "font-size:70%")))),shiny::hr(),
            actionButton(inputId='initButton0',label='Refresh the app',style='width:100%;color:blue;background:white')
@@ -58,7 +62,8 @@ ui_Vis <- fluidPage(
 #
 ui_MR <- fluidPage(
   #useShinyjs(),extendShinyjs(text = jscode,functions=c("refresh")),
-  useShinyjs(),extendShinyjs(text = "shinyjs.refresh=function(){history.go(0);};"),
+  useShinyjs(),extendShinyjs(text = "shinyjs.refresh=function(){history.go(0);};",
+                             functions = c("shinyjs.refresh")),
   theme = shinytheme("sandstone"),
   titlePanel('NetBIDShiny for hidden driver estimation'),
   sidebarPanel(width=5,

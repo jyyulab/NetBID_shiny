@@ -13,13 +13,17 @@ options(shiny.maxRequestSize = 1000*1024^2) ##
 
 server_Vis <- function(input, output,session) {
   ################
+  out.dir.DATA.default <- system.file('demo1','driver/DATA/analysis.par.Step.ms-tab.RData',package = "NetBID2")
+  out.dir.DATA <- getShinyOption("out.dir.DATA", out.dir.DATA)
+  ################
   use_data <- shiny::reactiveValues(ori_ms_tab=NULL,ms_tab=NULL,tmp_ms_tab=NULL,use_para='',basic_info='',
-                             project.name=NULL,main.dir=NULL,
-                             cal.eset=NULL,merge.ac.eset=NULL,merge.network=NULL,DE=NULL,DA=NULL,
-                             transfer_tab=NULL, main_id_type=NULL,all_gs2gene=NULL, all_gs2gene_info=NULL,
-                             all_comp=NULL,choose_comp=NULL,plot_height=500,plot_width=800,
-                             out.dir.DATA=system.file('demo1','driver/DATA/analysis.par.Step.ms-tab.RData',package = "NetBID2")) ## global variables
-  control_para <- shiny::reactiveValues(doloadData = FALSE, doplot=FALSE) ## control parameters
+                                    project.name=NULL,main.dir=NULL,
+                                    cal.eset=NULL,merge.ac.eset=NULL,merge.network=NULL,DE=NULL,DA=NULL,
+                                    transfer_tab=NULL, main_id_type=NULL,all_gs2gene=NULL, all_gs2gene_info=NULL,
+                                    all_comp=NULL,choose_comp=NULL,plot_height=500,plot_width=800,
+                                    out.dir.DATA=out.dir.DATA) ## global variables
+  #control_para <- shiny::reactiveValues(doloadData = FALSE, doplot=FALSE) ## control parameters
+  control_para <- shiny::reactiveValues(doloadData = 'doinitialdemoload', doplot=FALSE) ## control parameters
   search_path <- unique(setdiff(unique(search_path),''))
   if(is.null(search_path)==FALSE & length(search_path)>0){
     pre_path_id <- c('Current Directory','Home','R Installation','Available Volumes')
@@ -56,7 +60,7 @@ server_Vis <- function(input, output,session) {
   shiny::observeEvent(input$doNetBIDPlot, {control_para$doplot <- 'doNetBIDPlot'}) #8
   shiny::observeEvent(input$doTargetFunctionEnrichPlot, {control_para$doplot <- 'doTargetFunctionEnrichPlot'}) #9
   shiny::observeEvent(input$doDriverGSEAPlot, {control_para$doplot <- 'doDriverGSEAPlot'}) #10
-
+  
   ################
   # functions
   get_top_ms_tab <- function(ms_tab,top_strategy,top_num,z_col){
@@ -180,17 +184,20 @@ server_Vis <- function(input, output,session) {
     if(control_para$doloadData=='doinitialdemoload') loadDemoData()
     ms_tab <- use_data$ms_tab
     all_comp <- use_data$all_comp
-    mess <- sprintf('<b>NOTE</b>: <br>* The project name is <b>%s</b> with the main directory in %s; <br>* %s;
+    mess <- sprintf('<b>NOTE</b>: 
+                     <br>* The loaded data path is %s; <br>
+                     <br>* The project name is <b>%s</b> with the main directory in %s; <br>* Parameters: %s;
                      <br>%s<br>
                      * In total <b>%d</b> TF and <b>%d</b> SIG. <br> %d comparisons are found in the master table: %s ',
-                     use_data$project.name,use_data$main.dir,use_data$basic_info,use_data$use_para,
-                     table(ms_tab$funcType)['TF'],table(ms_tab$funcType)['SIG'],
-                     length(all_comp),paste(all_comp,collapse=' ;'))
+                    use_data$out.dir.DATA,
+                    use_data$project.name,use_data$main.dir,use_data$basic_info,use_data$use_para,
+                    table(ms_tab$funcType)['TF'],table(ms_tab$funcType)['SIG'],
+                    length(all_comp),paste(all_comp,collapse=' ;'))
     shiny::HTML(mess)
   })
   #
   output$initial_para <- shiny::renderUI({
-   # if(control_para$doloadData==FALSE) return()
+    # if(control_para$doloadData==FALSE) return()
     #ensembl <- useEnsembl(biomart = "ensembl", dataset = 'hsapiens_gene_ensembl')
     #tmp1 <- listAttributes(mart = ensembl)$name
     #tmp1 <- tmp1[grep('affy|agilent|illumina',tmp1)]
@@ -207,14 +214,14 @@ server_Vis <- function(input, output,session) {
       from_type <- gsub('Choose species:(.*); analysis level:(.*); main id type:(.*)','\\3',use_data$basic_info)
     }
     shiny::tagList(
-    shiny::fluidRow(
-      shiny::column(6,offset=0,shiny::selectInput(inputId='use_spe',label='Choose the species',choices=msigdbr_show_species(),selected = use_spe)),
-      shiny::column(6,offset=0,shiny::selectInput(inputId='use_level',label='Choose the gene/transcript level',choices=c('gene','transcript'),selected = use_level))
-    ),
-    shiny::fluidRow(
-      shiny::column(6,offset=0,shiny::selectInput(inputId='choose_main_id_type',label='Choose the main id type',choices=all_id_type,selected =from_type)),
-      shiny::column(6,offset=0,shiny::textInput(inputId='other_main_id_type',label='Input the main id type (if choose other, name need to be found in biomaRT)', value = ''))
-    )
+      shiny::fluidRow(
+        shiny::column(6,offset=0,shiny::selectInput(inputId='use_spe',label='Choose the species',choices=msigdbr_show_species(),selected = use_spe)),
+        shiny::column(6,offset=0,shiny::selectInput(inputId='use_level',label='Choose the gene/transcript level',choices=c('gene','transcript'),selected = use_level))
+      ),
+      shiny::fluidRow(
+        shiny::column(6,offset=0,shiny::selectInput(inputId='choose_main_id_type',label='Choose the main id type',choices=all_id_type,selected =from_type)),
+        shiny::column(6,offset=0,shiny::textInput(inputId='other_main_id_type',label='Input the main id type (if choose other, name need to be found in biomaRT)', value = ''))
+      )
     )
   })
   # error message
@@ -235,7 +242,7 @@ server_Vis <- function(input, output,session) {
       use_Fc <- all_logFC[grep(choose_comp,all_logFC,ignore.case=TRUE)]
       use_Pv <- all_Pv[grep(choose_comp,all_Pv,ignore.case=TRUE)]
       if(!input$logFC_col %in% use_Fc | !input$Pv_col %in% use_Pv){
-        p('WARNING : logFC or P-value shiny::column does not match the comparison, please check !')
+        p('WARNING : logFC or P-value column does not match the comparison, please check !')
       }
     }
   })
@@ -284,12 +291,12 @@ server_Vis <- function(input, output,session) {
     }
     use_data$ms_tab
   },rownames=FALSE,extensions = c('FixedColumns',"FixedHeader"),
-     options = list(
-     scrollX = TRUE,fixedColumns=list(leftColumns=4),
-     columnDefs = list(list(className = 'dt-center')),
-     filter='top',
-     pageLength = 5)
-    )
+  options = list(
+    scrollX = TRUE,fixedColumns=list(leftColumns=4),
+    columnDefs = list(list(className = 'dt-center')),
+    filter='top',
+    pageLength = 5)
+  )
   ################
   # draw options
   #1
@@ -310,32 +317,32 @@ server_Vis <- function(input, output,session) {
     use_Fc <- all_logFC[grep(choose_comp,all_logFC,ignore.case=TRUE)[1]]
     use_Pv <- all_Pv[grep(choose_comp,all_Pv,ignore.case=TRUE)[1]]
     shiny::fluidRow(
-        shiny::column(7,offset=0,shiny::tagList(
-          shiny::fluidRow(
-            shiny::column(8,offset=0,shiny::selectInput(inputId='choose_comp',label='choose the comparison want to focus in the following studies',choices=all_comp,selected = choose_comp)),
-            shiny::column(4,offset=0,shiny::selectInput(inputId='label_col1',label='choose shiny::column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1]))
-            ),
-          shiny::fluidRow(
-            shiny::column(8,offset=0,shiny::selectInput(inputId='logFC_col',label='choose logFC shiny::column',choices=all_logFC,selected = use_Fc)),
-            shiny::column(4,offset=0,shiny::numericInput(inputId='logFC_thre',label='input logFC threshold',value=0.05,min=0,max=Inf))
-          ),
-          shiny::fluidRow(
-            shiny::column(8,offset=0,shiny::selectInput(inputId='Pv_col',label='choose P-value shiny::column',choices=all_Pv,selected = use_Pv)),
-            shiny::column(4,offset=0,shiny::numericInput(inputId='Pv_thre',label='input P-value threshold',value=0.1,min=0,max=1))
-          )
-        )),
-        shiny::column(5,offset=0,shiny::tagList(
-          shiny::fluidRow(
-            shiny::column(6,offset=0,shiny::numericInput(inputId='min_Size',label='minimum target size for the driver',value=30,min=1,max=Inf,step=1)),
-            shiny::column(6,offset=0,shiny::numericInput(inputId='max_Size',label='maximum target size for the driver',value=1000,min=1,max=Inf,step=1))
-          ),
-          shiny::fluidRow(
-            shiny::column(10,offset=2,shiny::checkboxInput(inputId='show_label',label='Display significant items on plot?',value = FALSE))
-          ),
-          shiny::fluidRow(
-            shiny::column(10,offset=2,shiny::actionButton(inputId='doVolcalnoPlot',label='Draw Volcano Plot'))
-          )
-        ))
+      shiny::column(7,offset=0,shiny::tagList(
+        shiny::fluidRow(
+          shiny::column(8,offset=0,shiny::selectInput(inputId='choose_comp',label='choose the comparison want to focus in the following studies',choices=all_comp,selected = choose_comp)),
+          shiny::column(4,offset=0,shiny::selectInput(inputId='label_col1',label='choose column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1]))
+        ),
+        shiny::fluidRow(
+          shiny::column(8,offset=0,shiny::selectInput(inputId='logFC_col',label='choose logFC column',choices=all_logFC,selected = use_Fc)),
+          shiny::column(4,offset=0,shiny::numericInput(inputId='logFC_thre',label='input logFC threshold',value=0.05,min=0,max=Inf))
+        ),
+        shiny::fluidRow(
+          shiny::column(8,offset=0,shiny::selectInput(inputId='Pv_col',label='choose P-value column',choices=all_Pv,selected = use_Pv)),
+          shiny::column(4,offset=0,shiny::numericInput(inputId='Pv_thre',label='input P-value threshold',value=0.1,min=0,max=1))
+        )
+      )),
+      shiny::column(5,offset=0,shiny::tagList(
+        shiny::fluidRow(
+          shiny::column(6,offset=0,shiny::numericInput(inputId='min_Size',label='minimum target size for the driver',value=30,min=1,max=Inf,step=1)),
+          shiny::column(6,offset=0,shiny::numericInput(inputId='max_Size',label='maximum target size for the driver',value=1000,min=1,max=Inf,step=1))
+        ),
+        shiny::fluidRow(
+          shiny::column(10,offset=2,shiny::checkboxInput(inputId='show_label',label='Display significant items on plot?',value = FALSE))
+        ),
+        shiny::fluidRow(
+          shiny::column(10,offset=2,shiny::actionButton(inputId='doVolcalnoPlot',label='Draw Volcano Plot'))
+        )
+      ))
     )
   })
   #2
@@ -360,20 +367,20 @@ server_Vis <- function(input, output,session) {
         )),
         shiny::column(3,offset=0,shiny::tagList(
           shiny::fluidRow(shiny::column(6,offset=0,shiny::checkboxInput(inputId='cluster_rows',label='cluster genes/drivers?',value = TRUE)),
-                   shiny::column(6,offset=0,shiny::checkboxInput(inputId='cluster_columns',label='cluster samples?',value = TRUE))),
+                          shiny::column(6,offset=0,shiny::checkboxInput(inputId='cluster_columns',label='cluster samples?',value = TRUE))),
           shiny::fluidRow(shiny::column(6,offset=0,shiny::selectInput(inputId='clustering_distance_rows',label='strategy to cluster rows?',choices=all_cluster,selected=all_cluster[1])),
-                   shiny::column(6,offset=0,shiny::selectInput(inputId='clustering_distance_columns',label='strategy to cluster columns?',choices=all_cluster,selected=all_cluster[1]))),
+                          shiny::column(6,offset=0,shiny::selectInput(inputId='clustering_distance_columns',label='strategy to cluster columns?',choices=all_cluster,selected=all_cluster[1]))),
           shiny::fluidRow(shiny::column(6,offset=0,shiny::checkboxInput(inputId='show_row_names',label='display gene/driver name on the plot?',value = FALSE)),
-                   shiny::column(6,offset=0,shiny::checkboxInput(inputId='show_column_names',label='display sample name on the plot?',value = FALSE)))
+                          shiny::column(6,offset=0,shiny::checkboxInput(inputId='show_column_names',label='display sample name on the plot?',value = FALSE)))
         )),
         shiny::column(5,offset=1,shiny::tagList(
           shiny::fluidRow(shiny::column(4,offset=0,shiny::radioButtons(inputId='top_strategy2',label='choose the top strategy for selection',choiceValues=c('UP','DOWN','Both'),
-                                                  choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
-                   shiny::column(4,offset=0,shiny::numericInput(inputId='top_num2',label='number of top driver number (order by Z-statistics)',value=30,
-                                                  min=0,max=Inf,step=1)),
-                   shiny::column(4,offset=0,shiny::radioButtons(inputId='scale',label='Scale by ?',choices=c('none','row','shiny::column'),selected = 'none'))),
-          shiny::fluidRow(shiny::column(4,offset=0,shiny::selectInput(inputId='label_col2',label='choose shiny::column to display name for the driver',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
-                   shiny::column(6,offset=2,shiny::actionButton(inputId='doHeatmap',label='Draw Heatmap')))
+                                                                       choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
+                          shiny::column(4,offset=0,shiny::numericInput(inputId='top_num2',label='number of top driver number (order by Z-statistics)',value=30,
+                                                                       min=0,max=Inf,step=1)),
+                          shiny::column(4,offset=0,shiny::radioButtons(inputId='scale',label='Scale by ?',choices=c('none','row','column'),selected = 'row'))),
+          shiny::fluidRow(shiny::column(4,offset=0,shiny::selectInput(inputId='label_col2',label='choose column to display name for the driver',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
+                          shiny::column(6,offset=2,shiny::actionButton(inputId='doHeatmap',label='Draw Heatmap')))
         )
         ))
     )
@@ -390,8 +397,8 @@ server_Vis <- function(input, output,session) {
     all_driver <- ms_tab$originalID_label ## unique!!!
     shiny::tagList(
       shiny::fluidRow(shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver3',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
-               shiny::column(4,offset=0,shiny::checkboxGroupInput(inputId='use_phe3',label='choose sample feature to display',choices=all_phe,selected =all_phe[1])),
-               shiny::column(4,offset=0,shiny::actionButton(inputId='doCategoryBoxPlot',label='Draw Category Box-Plot'))
+                      shiny::column(4,offset=0,shiny::checkboxGroupInput(inputId='use_phe3',label='choose sample feature to display',choices=all_phe,selected =all_phe[1])),
+                      shiny::column(4,offset=0,shiny::actionButton(inputId='doCategoryBoxPlot',label='Draw Category Box-Plot'))
       )
     )
   })
@@ -403,15 +410,15 @@ server_Vis <- function(input, output,session) {
     all_driver <- ms_tab$originalID_label ## unique!!!
     shiny::tagList(
       shiny::fluidRow(
-               shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver4',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
-               shiny::column(4,offset=0,shiny::selectInput(inputId='label_col4',label='choose shiny::column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
-               shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver4_2',label='choose the second driver to plot (optinal)',choices=c('',all_driver),selected=''))
+        shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver4',label='choose the driver to plot',choices=all_driver,selected = all_driver[1])),
+        shiny::column(4,offset=0,shiny::selectInput(inputId='label_col4',label='choose column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
+        shiny::column(4,offset=0,shiny::selectInput(inputId='choose_driver4_2',label='choose the second driver to plot (optinal)',choices=c('',all_driver),selected=''))
       ),
       shiny::fluidRow(
-               shiny::column(3,offset=0,shiny::checkboxInput(inputId='use_gene_symbol4',label='Display gene symbol',value = FALSE)),
-               shiny::column(3,offset=0,shiny::checkboxInput(inputId='use_protein_coding4',label='Only Display protein coding genes/transcripts',value = FALSE)),
-               shiny::column(3,offset=0,shiny::checkboxInput(inputId='alphabetical_order',label='alphabetical_order',value = FALSE)),
-               shiny::column(3,offset=0,shiny::actionButton(inputId='doTargetNetPlot',label='Draw TargetNet Plot'))
+        shiny::column(3,offset=0,shiny::checkboxInput(inputId='use_gene_symbol4',label='Display gene symbol',value = FALSE)),
+        shiny::column(3,offset=0,shiny::checkboxInput(inputId='use_protein_coding4',label='Only Display protein coding genes/transcripts',value = FALSE)),
+        shiny::column(3,offset=0,shiny::checkboxInput(inputId='alphabetical_order',label='alphabetical_order',value = FALSE)),
+        shiny::column(3,offset=0,shiny::actionButton(inputId='doTargetNetPlot',label='Draw TargetNet Plot'))
       ),
       p('NOTE: Only accepet originalID_label for its uniqueness, please search the the box in the left to get the label !')
     )
@@ -434,13 +441,13 @@ server_Vis <- function(input, output,session) {
         shiny::column(2,offset=0,shiny::selectInput(inputId='target_col',label='choose whether to use color to display target',choices=c('RdBu','black'),selected='RdBu')),
         shiny::column(2,offset=0,shiny::selectInput(inputId='target_col_type',label='choose color strategy to display target',choices=c('PN','DE'),selected='PN')),
         shiny::column(2,offset=0,shiny::numericInput(inputId='profile_sig_thre',label='Threshold for significance (only applied for DE)',value=0,min=0))
-        ),
+      ),
       shiny::fluidRow(
         shiny::column(2,offset=0,shiny::numericInput(inputId='Z_sig_thre',label='Threshold for Z statistics to display color for top drivers',value=1.64,min=0,max=NA)),
         shiny::column(2,offset=0,shiny::radioButtons(inputId='top_strategy5',label='choose the top strategy for selection',choiceValues=c('UP','DOWN','Both'),
-                                       choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
+                                                     choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
         shiny::column(2,offset=0,shiny::numericInput(inputId='top_num5',label='number of top driver number (order by Z-statistics)',value=30,step=1,min=0,max=Inf)),
-        shiny::column(2,offset=0,shiny::selectInput(inputId='label_col5',label='choose shiny::column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
+        shiny::column(2,offset=0,shiny::selectInput(inputId='label_col5',label='choose column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
         shiny::column(4,offset=0,shiny::actionButton(inputId='doGSEAPlot',label='Draw GSEA Plot'))
       ),
       p("NOTE:
@@ -471,17 +478,17 @@ server_Vis <- function(input, output,session) {
       shiny::fluidRow(
         shiny::column(2,offset=0,shiny::checkboxGroupInput(inputId='use_gs1_6',label='choose Category to analyze',choiceNames=use_gs1[,2],choiceValues=use_gs1[,1],selected ='H')),
         shiny::column(3,offset=0,shiny::checkboxGroupInput(inputId='use_gs2_6',label='choose Sub-Category to analyze',choiceNames=use_gs2[,2],choiceValues=use_gs2[,1],
-                                             selected =c('CP:BIOCARTA','CP:REACTOME','CP:KEGG'))),
+                                                           selected =c('CP:BIOCARTA','CP:REACTOME','CP:KEGG'))),
         shiny::column(7,offset=0,shiny::tagList(
           shiny::fluidRow(shiny::column(3,offset=0,shiny::numericInput(inputId='min_gs_size6',label='minimum gene set size to analyze',value=5,min=0,max=NA)),
-                   shiny::column(3,offset=0,shiny::numericInput(inputId='max_gs_size6',label='maximum gene set size to analyze',value=300,min=0,max=NA)),
-                   shiny::column(3,offset=0,shiny::selectInput(inputId='Pv_adj6',label='P value adjusted strategy',
-                                                 choices=c("fdr","BH","none","holm","hochberg","hommel", "bonferroni","BY"),selected='none')),
-                   shiny::column(3,offset=0,shiny::numericInput(inputId='Pv_thre6',label='P value threshold',value=0.1,min=0,max=1))
-                   ),
+                          shiny::column(3,offset=0,shiny::numericInput(inputId='max_gs_size6',label='maximum gene set size to analyze',value=300,min=0,max=NA)),
+                          shiny::column(3,offset=0,shiny::selectInput(inputId='Pv_adj6',label='P value adjusted strategy',
+                                                                      choices=c("fdr","BH","none","holm","hochberg","hommel", "bonferroni","BY"),selected='none')),
+                          shiny::column(3,offset=0,shiny::numericInput(inputId='Pv_thre6',label='P value threshold',value=0.1,min=0,max=1))
+          ),
           shiny::fluidRow(
             shiny::column(3,offset=0,shiny::radioButtons(inputId='top_strategy6',label='choose the top strategy for selection',choiceValues=c('UP','DOWN','Both'),
-                                           choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
+                                                         choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
             shiny::column(3,offset=0,shiny::numericInput(inputId='top_num6',label='number of top driver number (order by Z-statistics)',value=300,step=1,min=0,max=Inf)),
             shiny::column(3,offset=0,shiny::numericInput(inputId='top_gs_num6',label='number of top gene set number (order by p-value)',value=30,step=1,min=0,max=Inf)),
             shiny::column(3,offset=0,shiny::numericInput(inputId='h6',label='threshold for cluster',value=0.9,step=0.01,min=0,max=1))
@@ -493,7 +500,7 @@ server_Vis <- function(input, output,session) {
           )
         ))),
       p("")
-      )
+    )
   })
   #7
   output$BubblePlot_para <- shiny::renderUI({
@@ -510,22 +517,22 @@ server_Vis <- function(input, output,session) {
       shiny::fluidRow(
         shiny::column(2,offset=0,shiny::checkboxGroupInput(inputId='use_gs1_7',label='choose Category to analyze',choiceNames=use_gs1[,2],choiceValues=use_gs1[,1],selected ='H')),
         shiny::column(3,offset=0,shiny::checkboxGroupInput(inputId='use_gs2_7',label='choose Sub-Category to analyze',choiceNames=use_gs2[,2],choiceValues=use_gs2[,1],
-                                             selected =c('CP:BIOCARTA','CP:REACTOME','CP:KEGG'))),
+                                                           selected =c('CP:BIOCARTA','CP:REACTOME','CP:KEGG'))),
         shiny::column(7,offset=0,shiny::tagList(
           shiny::fluidRow(shiny::column(3,offset=0,shiny::numericInput(inputId='min_gs_size7',label='minimum gene set size to analyze',value=5,min=0,max=NA)),
-                   shiny::column(3,offset=0,shiny::numericInput(inputId='max_gs_size7',label='maximum gene set size to analyze',value=300,min=0,max=NA)),
-                   shiny::column(3,offset=0,shiny::selectInput(inputId='Pv_adj7',label='P value adjusted strategy',
-                                                 choices=c("fdr","BH","none","holm","hochberg","hommel", "bonferroni","BY"),selected='none')),
-                   shiny::column(3,offset=0,shiny::numericInput(inputId='Pv_thre7',label='P value threshold',value=0.1,min=0,max=1))
+                          shiny::column(3,offset=0,shiny::numericInput(inputId='max_gs_size7',label='maximum gene set size to analyze',value=300,min=0,max=NA)),
+                          shiny::column(3,offset=0,shiny::selectInput(inputId='Pv_adj7',label='P value adjusted strategy',
+                                                                      choices=c("fdr","BH","none","holm","hochberg","hommel", "bonferroni","BY"),selected='none')),
+                          shiny::column(3,offset=0,shiny::numericInput(inputId='Pv_thre7',label='P value threshold',value=0.1,min=0,max=1))
           ),
           shiny::fluidRow(
             shiny::column(4,offset=0,shiny::radioButtons(inputId='top_strategy7',label='choose the top strategy for selection',choiceValues=c('UP','DOWN','Both'),
-                                           choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
+                                                         choiceNames=c('Up(Z-statistics>0)','Down(Z-statistics<0)','Both'),selected = 'Both')),
             shiny::column(4,offset=0,shiny::numericInput(inputId='top_num7',label='number of top driver number (order by Z-statistics)',value=10,step=1,min=0,max=Inf)),
             shiny::column(4,offset=0,shiny::numericInput(inputId='top_geneset_number',label='number of top gene set number (order by p-value)',value=30,step=1,min=0,max=Inf))
           ),
           shiny::fluidRow(
-            shiny::column(4,offset=0,shiny::selectInput(inputId='label_col7',label='choose shiny::column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
+            shiny::column(4,offset=0,shiny::selectInput(inputId='label_col7',label='choose column to display',choices=colnames(ms_tab)[1:4],selected=colnames(ms_tab)[1])),
             shiny::column(6,offset=2,shiny::actionButton(inputId='doBubblePlot',label='Draw Bubble Plot'))
           )
         ))),
@@ -546,14 +553,14 @@ server_Vis <- function(input, output,session) {
     shiny::tagList(
       shiny::p(sprintf('You are focusing on %s',use_data$choose_comp)),
       shiny::fluidRow(shiny::column(6,offset=0,shiny::checkboxGroupInput(inputId='DA_list',label='choose DA comparisons to display',choices=all_comp,selected =choose_comp)),
-               shiny::column(6,offset=0,shiny::checkboxGroupInput(inputId='DE_list',label='choose DE comparisons to display',choices=all_comp,selected =choose_comp))
+                      shiny::column(6,offset=0,shiny::checkboxGroupInput(inputId='DE_list',label='choose DE comparisons to display',choices=all_comp,selected =choose_comp))
       ),
       shiny::fluidRow(
-#               shiny::column(3,offset=0,shiny::selectInput(inputId='main_id',label='main comparison to visualize',choices=all_comp,selected=choose_comp)),
-               shiny::column(3,offset=0,shiny::numericInput(inputId='top_number8',label='number of top drivers',value=30,step=1,min=0,max=Inf)),
-               shiny::column(3,offset=0,shiny::selectInput(inputId='DA_display_col',label='columns for DA display',choices=c("P.Value",'logFC'),selected='P.Value')),
-               shiny::column(3,offset=0,shiny::selectInput(inputId='DE_display_col',label='columns for DE display',choices=c("P.Value",'logFC'),selected='logFC')),
-               shiny::column(3,offset=0,shiny::actionButton(inputId='doNetBIDPlot',label='Draw NetBID-Plot'))
+        #               shiny::column(3,offset=0,shiny::selectInput(inputId='main_id',label='main comparison to visualize',choices=all_comp,selected=choose_comp)),
+        shiny::column(3,offset=0,shiny::numericInput(inputId='top_number8',label='number of top drivers',value=30,step=1,min=0,max=Inf)),
+        shiny::column(3,offset=0,shiny::selectInput(inputId='DA_display_col',label='columns for DA display',choices=c("P.Value",'logFC'),selected='P.Value')),
+        shiny::column(3,offset=0,shiny::selectInput(inputId='DE_display_col',label='columns for DE display',choices=c("P.Value",'logFC'),selected='logFC')),
+        shiny::column(3,offset=0,shiny::actionButton(inputId='doNetBIDPlot',label='Draw NetBID-Plot'))
       )
     )
   })
@@ -728,7 +735,7 @@ server_Vis <- function(input, output,session) {
       use_data$plot_width <- as.numeric(input$plot_width1)
       use_ms_tab <- ms_tab[which(ms_tab$Size>=as.numeric(input$min_Size) & ms_tab$Size<=as.numeric(input$max_Size)),]
       res1 <- draw.volcanoPlot(dat=use_ms_tab,label_col = input$label_col1,logFC_col = input$logFC_col, Pv_col=input$Pv_col,
-                       logFC_thre = as.numeric(input$logFC_thre), Pv_thre=as.numeric(input$Pv_thre), show_label = input$show_label)
+                               logFC_thre = as.numeric(input$logFC_thre), Pv_thre=as.numeric(input$Pv_thre), show_label = input$show_label)
       w1 <- which(abs(use_ms_tab[,input$logFC_col])>=as.numeric(input$logFC_thre) & use_ms_tab[,input$Pv_col]<=as.numeric(input$Pv_thre))
       tmp_ms_tab <- use_ms_tab[w1,]
       use_data$tmp_ms_tab <- tmp_ms_tab
@@ -768,8 +775,8 @@ server_Vis <- function(input, output,session) {
       use_gene <- ms_tab[use_driver,'originalID']
       if(use_gene %in% rownames(mat_exp)){
         res1 <- draw.categoryValue(ac_val=mat_ac[use_driver,],exp_val=mat_exp[use_gene,],use_obs_class = use_obs_class,
-                           main_ac=ms_tab[use_driver,'gene_label'],main_exp=ms_tab[use_driver,'geneSymbol'],
-                           main_cex=input$main_cex,strip_cex=input$strip_cex,class_cex=input$class_cex)
+                                   main_ac=ms_tab[use_driver,'gene_label'],main_exp=ms_tab[use_driver,'geneSymbol'],
+                                   main_cex=input$main_cex,strip_cex=input$strip_cex,class_cex=input$class_cex)
       }else{
         res1 <- draw.categoryValue(ac_val=mat_ac[use_driver,],use_obs_class = use_obs_class,main_ac=ms_tab[use_driver,'gene_label'],
                                    main_cex=input$main_cex,strip_cex=input$strip_cex,class_cex=input$class_cex)
@@ -827,14 +834,14 @@ server_Vis <- function(input, output,session) {
       uc <- gsub('(.*)_DA','\\1',use_data$choose_comp)
       uc <- gsub('(.*)_DE','\\1',uc)
       res1 <- draw.GSEA.NetBID(DE = use_data$DE[[uc]], name_col = 'ID', profile_col = input$profile_col5,
-                         profile_trend = input$profile_trend, driver_list = ms_tab$originalID_label,
-                         show_label = ms_tab[,input$label_col5],
-                         driver_DA_Z = ms_tab[,z_col_DA], driver_DE_Z = ms_tab[,z_col_DE],
-                         target_list = use_data$merge.network,
-                         top_driver_number = nrow(ms_tab), target_nrow = input$target_nrow,
-                         target_col = input$target_col, target_col_type = input$target_col_type, left_annotation = "",
-                         right_annotation = "", main = "", profile_sig_thre = input$profile_sig_thre,
-                         Z_sig_thre = input$Z_sig_thre)
+                               profile_trend = input$profile_trend, driver_list = ms_tab$originalID_label,
+                               show_label = ms_tab[,input$label_col5],
+                               driver_DA_Z = ms_tab[,z_col_DA], driver_DE_Z = ms_tab[,z_col_DE],
+                               target_list = use_data$merge.network,
+                               top_driver_number = nrow(ms_tab), target_nrow = input$target_nrow,
+                               target_col = input$target_col, target_col_type = input$target_col_type, left_annotation = "",
+                               right_annotation = "", main = "", profile_sig_thre = input$profile_sig_thre,
+                               Z_sig_thre = input$Z_sig_thre)
     }
     if(control_para$doplot=='doFunctionEnrichPlot'){ # 6
       if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
@@ -847,11 +854,11 @@ server_Vis <- function(input, output,session) {
                                           min_gs_size = input$min_gs_size6, max_gs_size = input$max_gs_size6,
                                           Pv_adj = input$Pv_adj6, Pv_thre = input$Pv_thre6)
       res1 <- draw.funcEnrich.cluster(funcEnrich_res = funcEnrich_res, top_number = input$top_gs_num6,
-                              Pv_col = "Ori_P", name_col = "#Name",
-                              item_col = "Intersected_items", Pv_thre = input$Pv_thre6, gs_cex = input$gs_cex6,
-                              gene_cex = input$gene_cex6, pv_cex = input$pv_cex6, main = "", h = input$h6,
-                              cluster_gs = input$cluster_gs, cluster_gene = input$cluster_gene,
-                              use_genes = NULL, return_mat = FALSE)
+                                      Pv_col = "Ori_P", name_col = "#Name",
+                                      item_col = "Intersected_items", Pv_thre = input$Pv_thre6, gs_cex = input$gs_cex6,
+                                      gene_cex = input$gene_cex6, pv_cex = input$pv_cex6, main = "", h = input$h6,
+                                      cluster_gs = input$cluster_gs, cluster_gene = input$cluster_gene,
+                                      use_genes = NULL, return_mat = FALSE)
     }
     if(control_para$doplot=='doBubblePlot'){ # 7
       if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
@@ -865,12 +872,12 @@ server_Vis <- function(input, output,session) {
       #print(str(bg_gene))
       #print(c(input$label_col7,z_col,input$min_gs_size7,input$max_gs_size7,input$Pv_adj7,input$Pv_thre7,input$top_geneset_number,input$top_num7))
       res1 <- draw.bubblePlot(driver_list = ms_tab$originalID_label, show_label = ms_tab[,input$label_col7],
-                      Z_val = ms_tab[,z_col_DA], driver_type = NULL, target_list = use_data$merge.network,
-                      transfer2symbol2type = use_data$transfer_tab, bg_list = bg_gene, min_gs_size = input$min_gs_size7,
-                      max_gs_size = input$max_gs_size7, use_gs = c(input$use_gs1_7,input$use_gs2_7),
-                      display_gs_list = NULL, Pv_adj = input$Pv_adj7, Pv_thre = input$Pv_thre7,
-                      top_geneset_number = input$top_geneset_number, top_driver_number = input$top_num7,
-                      mark_gene = NULL, driver_cex = input$driver_cex7, gs_cex = input$gs_cex7)
+                              Z_val = ms_tab[,z_col_DA], driver_type = NULL, target_list = use_data$merge.network,
+                              transfer2symbol2type = use_data$transfer_tab, bg_list = bg_gene, min_gs_size = input$min_gs_size7,
+                              max_gs_size = input$max_gs_size7, use_gs = c(input$use_gs1_7,input$use_gs2_7),
+                              display_gs_list = NULL, Pv_adj = input$Pv_adj7, Pv_thre = input$Pv_thre7,
+                              top_geneset_number = input$top_geneset_number, top_driver_number = input$top_num7,
+                              mark_gene = NULL, driver_cex = input$driver_cex7, gs_cex = input$gs_cex7)
     }
     if(control_para$doplot=='doNetBIDPlot'){ # 8
       if(is.null(use_data$choose_comp)==TRUE) return(p('Please plot volcano plot first in order to choose the targeted comparison !'))
@@ -885,8 +892,10 @@ server_Vis <- function(input, output,session) {
       print(str(DA[DA_list])); print(str(DE[DE_list])); print(input$choose_comp)
       res1 <- draw.NetBID(DA_list = DA[DA_list], DE_list = DE[DE_list], main_id = choose_comp,
                           top_number = input$top_number8, DA_display_col = input$DA_display_col,
-                          DE_display_col = input$DE_display_col, z_col = "Z-statistics", digit_num = 2,
-                          row_cex = input$row_cex, column_cex = input$column_cex, text_cex = input$text_cex, col_srt = 60)
+                          DE_display_col = input$DE_display_col, z_col = "Z-statistics", 
+                          digit_num = 2,
+                          row_cex = input$row_cex, column_cex = input$column_cex, 
+                          text_cex = input$text_cex, col_srt = 60)
     }
     if(control_para$doplot=='doTargetFunctionEnrichPlot'){ # 9
       use_data$plot_height <- as.numeric(input$plot_height9)
@@ -940,9 +949,9 @@ server_Vis <- function(input, output,session) {
     if(control_para$doplot==FALSE) return()
     if(control_para$doplot=='doVolcalnoPlot'){ #1
       mess <- sprintf('<b>MESSAGE</b>: %d drivers passed by the filter !',nrow(use_data$tmp_ms_tab));
-       shiny::tagList(
-         shiny::hr(),
-         shiny::fluidRow(
+      shiny::tagList(
+        shiny::hr(),
+        shiny::fluidRow(
           shiny::column(4,offset=1,shiny::HTML(mess)),
           shiny::column(6,offset=0,shiny::actionButton(inputId='doupdateMsTab',label='Update the master table by using the parameters and top number above'))
         )
@@ -1178,6 +1187,16 @@ server_Vis <- function(input, output,session) {
 }
 ##
 server_MR <- function(input, output,session){
+  ###########
+  use_dir <- system.file('',package = "NetBIDshiny")
+  tf_network_file.default <- sprintf('%s/demo1_human/human_MB.TF_consensus_network_ncol_.txt',use_dir)
+  sig_network_file.default <- sprintf('%s/demo1_human/human_MB.SIG_consensus_network_ncol_.txt',use_dir)
+  eset_demo_path.default <- sprintf('%s/demo1_human/demo_human_MB_eset.RData',use_dir)
+  eset_demo_path <- getShinyOption("eset_demo_path", eset_demo_path.default)
+  tf_network_file <- getShinyOption("tf_network_file", tf_network_file.default)
+  sig_network_file <- getShinyOption("sig_network_file", sig_network_file.default)
+  
+  ###########
   if(exists('analysis.par',envir=.GlobalEnv)==TRUE) rm(analysis.par,envir=.GlobalEnv)
   search_network_path <- unique(setdiff(unique(search_network_path),''))
   if(is.null(search_network_path)==FALSE & length(search_network_path)>0){
@@ -1216,25 +1235,25 @@ server_MR <- function(input, output,session){
   #shinyFileSave(input, "save", roots = volumes, session = session, restrictions = system.file(package = "base"))
   #
   use_data <- shiny::reactiveValues(eset=NULL,tf_network_file=NULL,sig_network_file=NULL,
-                             project_main_dir='',project_name='',
-                             G0_name='',G1_name='',
-                             comp_name='',intgroup='',
-                             main_id_type='',cal.eset_main_id_type='',
-                             DE_strategy='',use_spe='',cal.eset_use_spe='',
-                             use_level='',pass=0,doQC=FALSE,doPLOT=FALSE,top_number=30)
+                                    project_main_dir='',project_name='',
+                                    G0_name='',G1_name='',
+                                    comp_name='',intgroup='',
+                                    main_id_type='',cal.eset_main_id_type='',
+                                    DE_strategy='',use_spe='',cal.eset_use_spe='',
+                                    use_level='',pass=0,doQC=FALSE,doPLOT=FALSE,top_number=30)
   control_para <- shiny::reactiveValues(doloadData = FALSE, doanalysis=FALSE,checkanalysis = FALSE) ## control parameters
   shiny::observeEvent(input$loadButton, { control_para$doloadData <- 'doinitialload';})
   shiny::observeEvent(input$loadDemoButton, { control_para$doloadData <- 'doinitialdemoload';})
   shiny::observeEvent(input$doButton, { control_para$doanalysis <- TRUE;},once=FALSE,autoDestroy=FALSE)
   shiny::observeEvent(input$initButton0, { js$refresh();control_para$doloadData <- FALSE; control_para$checkanalysis <- FALSE;control_para$doanalysis <- FALSE;})
   output$filepaths_tf_network_file <- shiny::renderUI({
-      shiny::p(parseFilePaths(volumes_network, input$choose_tf_network_file)$datapath)
+    shiny::p(parseFilePaths(volumes_network, input$choose_tf_network_file)$datapath)
   })
   output$filepaths_sig_network_file <- shiny::renderUI({
-      shiny::p(parseFilePaths(volumes_network, input$choose_sig_network_file)$datapath)
+    shiny::p(parseFilePaths(volumes_network, input$choose_sig_network_file)$datapath)
   })
   output$filepaths_choose_eset_RData_file <- shiny::renderUI({
-      shiny::p(parseFilePaths(volumes_eSet, input$choose_eset_RData_file)$datapath)
+    shiny::p(parseFilePaths(volumes_eSet, input$choose_eset_RData_file)$datapath)
   })
   loadData <- shiny::reactive({
     output$error_message <- shiny::renderUI({shiny::p('')})
@@ -1303,11 +1322,11 @@ server_MR <- function(input, output,session){
     #use_data$tf_network_file <- 'data/network_txt/Other_network_demo/human_MB.TF_consensus_network_ncol_.txt'
     #use_data$sig_network_file <- 'data/network_txt/Other_network_demo/human_MB.SIG_consensus_network_ncol_.txt'
     use_dir <- system.file('',package = "NetBIDshiny")
-    eset_demo_path <- sprintf('%s/demo1_human/demo_human_MB_eset.RData',use_dir)
+    #eset_demo_path <- sprintf('%s/demo1_human/demo_human_MB_eset.RData',use_dir)
     load(eset_demo_path)
     use_data$eset <- eset
-    use_data$tf_network_file <- sprintf('%s/demo1_human/human_MB.TF_consensus_network_ncol_.txt',use_dir)
-    use_data$sig_network_file <- sprintf('%s/demo1_human/human_MB.SIG_consensus_network_ncol_.txt',use_dir)
+    use_data$tf_network_file <- tf_network_file#sprintf('%s/demo1_human/human_MB.TF_consensus_network_ncol_.txt',use_dir)
+    use_data$sig_network_file <- sig_network_file#sprintf('%s/demo1_human/human_MB.SIG_consensus_network_ncol_.txt',use_dir)
     print('Finish loading the demo dataset')
   })
   output$summaryProject<-shiny::renderUI({
@@ -1357,11 +1376,11 @@ server_MR <- function(input, output,session){
       shiny::tagList(
         shiny::fluidRow(
           shiny::column(4,offset=0,shiny::selectInput(inputId='intgroup',label='Select the interested sample group for analysis',
-                                        choices=all_int,selected = sel_int)),
+                                                      choices=all_int,selected = sel_int)),
           shiny::column(4,offset=0,shiny::selectInput(inputId='G1_name',label='Select type for the case group',
-                                        choices=all_g1,selected = g1)),
+                                                      choices=all_g1,selected = g1)),
           shiny::column(4,offset=0,shiny::selectInput(inputId='G0_name',label='Select type for the control group',
-                                        choices=all_g2,selected = g2))
+                                                      choices=all_g2,selected = g2))
         ),
         shiny::fluidRow(
           shiny::column(4,offset=0,shiny::textInput(inputId='comp_name',label='Input the comparison name',value=comp_name)),
@@ -1384,7 +1403,7 @@ server_MR <- function(input, output,session){
         ),
         shiny::fluidRow(
           shiny::column(4,offset=0,shinyDirButton(id='project_main_dir',label='Choose main output directory for the project',
-                                           title='Please choose the directory of the project for saving the output')),
+                                                  title='Please choose the directory of the project for saving the output')),
           shiny::column(4,offset=0,shiny::htmlOutput('dirpaths_project_main_dir')),
           shiny::column(4,offset=0,shiny::textInput(inputId='project_name',label='Project name',value=''))
         ),shiny::hr(),
@@ -1401,16 +1420,16 @@ server_MR <- function(input, output,session){
       shiny::tagList(
         shiny::fluidRow(
           shiny::column(4,offset=0,shiny::selectInput(inputId='intgroup',label='Select the interested sample group for analysis',
-                                        choices=all_int,selected = sel_int)),
+                                                      choices=all_int,selected = sel_int)),
           shiny::column(4,offset=0,shiny::selectInput(inputId='G1_name',label='Select type for the case group',
-                                        choices=all_g1,selected = g1)),
+                                                      choices=all_g1,selected = g1)),
           shiny::column(4,offset=0,shiny::selectInput(inputId='G0_name',label='Select type for the control group',
-                                        choices=all_g2,selected = g2))
+                                                      choices=all_g2,selected = g2))
         ),
         shiny::fluidRow(
           shiny::column(4,offset=0,shiny::textInput(inputId='comp_name',label='Input the comparison name',value=comp_name)),
           shiny::column(4,offset=0,shiny::selectInput(inputId='DE_strategy',label='Choose the analysis strategy',
-                                        choices=c('limma','bid'),selected = 'limma')),
+                                                      choices=c('limma','bid'),selected = 'limma')),
           shiny::column(4,offset=0,shiny::selectInput(inputId='use_level',label='Choose the ID level for the network',
                                                       choices=c('gene','transcript'),selected = 'gene'))
         ),
@@ -1422,9 +1441,9 @@ server_MR <- function(input, output,session){
         ),     
         shiny::fluidRow(
           shiny::column(4,offset=0,shiny::selectInput(inputId='cal.eset_main_id_type',label='Choose the main id type for calculation dataset',
-                                        choices=all_id_type,selected =from_type)),
+                                                      choices=all_id_type,selected =from_type)),
           shiny::column(4,offset=0,shiny::selectInput(inputId='main_id_type',label='Choose the main id type for the network files',
-                                        choices=all_id_type,selected =from_type))
+                                                      choices=all_id_type,selected =from_type))
         ),
         shiny::fluidRow(
           shiny::column(4,offset=0,shiny::textInput(inputId='project_name',label='Project name',value=''))
@@ -1442,7 +1461,7 @@ server_MR <- function(input, output,session){
   })
   output$checkReturn <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
-  #  if(control_para$checkanalysis==FALSE) return()
+    #  if(control_para$checkanalysis==FALSE) return()
     if(is.null(pre_project_main_dir)==TRUE){
       j1 <- class(input$project_main_dir)[1]
       #print(j1)
@@ -1454,7 +1473,7 @@ server_MR <- function(input, output,session){
     }else{
       project_main_dir <- pre_project_main_dir
     }
-
+    
     j2 <- input$project_name
     #print(j2)
     if(j2==''){
@@ -1490,7 +1509,7 @@ server_MR <- function(input, output,session){
       shiny::HTML(sprintf('<p>Main species (network species):<b>%s</b></p>',use_data$use_spe)),
       shiny::HTML(sprintf('<p>Main species (calculation dataset species):<b>%s</b></p>',use_data$cal.eset_use_spe)),
       shiny::HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
-                use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
+                          use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
       shiny::HTML('<p>If the species/ID type is not the same between network file and calculation dataset, will use the value in network file ! </p>'),
       shiny::HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
       shiny::HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
@@ -1503,7 +1522,7 @@ server_MR <- function(input, output,session){
   })
   output$analysisReturn <- shiny::renderUI({
     if(control_para$doloadData==FALSE) return()
-   # if(control_para$checkanalysis==FALSE) return()
+    # if(control_para$checkanalysis==FALSE) return()
     if(use_data$pass==0) return(shiny::tagList(shiny::h4('Result message:'),shiny::p('Input option missing !')))
     if(control_para$doanalysis==FALSE) return(shiny::tagList(shiny::h4('Result message:'),shiny::p('Haven\'t started yet !')))
     output$analysisOption <- shiny::renderUI({})
@@ -1584,54 +1603,54 @@ server_MR <- function(input, output,session){
     if(is.null(pre_project_main_dir)==TRUE){ ## no need to download file
       if(use_data$doPLOT==TRUE){
         return(shiny::tagList(h4('Result message:'),
-                       shiny::HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
-                       shiny::HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
-                       shiny::HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
-                       shiny::HTML(sprintf('<p>Main species (network species):<b>%s</b></p>',use_data$use_spe)),
-                       shiny::HTML(sprintf('<p>Main species (calculation dataset species):<b>%s</b></p>',use_data$cal.eset_use_spe)),
-                       shiny::HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
-                                           use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
-                       shiny::HTML('<p>If the species/ID type is not the same between network file and calculation dataset, will use the value in network file ! </p>'),
-                       shiny::HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
-                       shiny::HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
-                       shiny::HTML(sprintf('<p style=\'color:red;\'>Finish ! Check Master table excel file in %s/%s/DATA/%s_ms_tab.xlsx <br> 
+                              shiny::HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
+                              shiny::HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
+                              shiny::HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
+                              shiny::HTML(sprintf('<p>Main species (network species):<b>%s</b></p>',use_data$use_spe)),
+                              shiny::HTML(sprintf('<p>Main species (calculation dataset species):<b>%s</b></p>',use_data$cal.eset_use_spe)),
+                              shiny::HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
+                                                  use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
+                              shiny::HTML('<p>If the species/ID type is not the same between network file and calculation dataset, will use the value in network file ! </p>'),
+                              shiny::HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
+                              shiny::HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
+                              shiny::HTML(sprintf('<p style=\'color:red;\'>Finish ! Check Master table excel file in %s/%s/DATA/%s_ms_tab.xlsx <br> 
                                     RData file in %s/%s/DATA/analysis.par.Step.ms-tab.RData</p>',
-                                    project_main_dir,project_name,project_name,project_main_dir,project_name)),
-                       shiny::HTML(sprintf('<p style=\'color:red;\'>Plot for top drivers in %s/%s/PLOT/',
-                                    project_main_dir,project_name)),
-                       shiny::HTML('<p>Please click the Refresh button to start another analysis!</p>')))
+                                                  project_main_dir,project_name,project_name,project_main_dir,project_name)),
+                              shiny::HTML(sprintf('<p style=\'color:red;\'>Plot for top drivers in %s/%s/PLOT/',
+                                                  project_main_dir,project_name)),
+                              shiny::HTML('<p>Please click the Refresh button to start another analysis!</p>')))
         
-      
-        }else{
+        
+      }else{
         return(shiny::tagList(h4('Result message:'),
-                       shiny::HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
-                       shiny::HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
-                       shiny::HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
-                       shiny::HTML(sprintf('<p>Main species (network species):<b>%s</b></p>',use_data$use_spe)),
-                       shiny::HTML(sprintf('<p>Main species (calculation dataset species):<b>%s</b></p>',use_data$cal.eset_use_spe)),
-                       shiny::HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
-                                           use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
-                       shiny::HTML('<p>If the species/ID type is not the same between network file and calculation dataset, will use the value in network file ! </p>'),
-                       shiny::HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
-                       shiny::HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
-                       shiny::HTML(sprintf('<p style=\'color:red;\'>Finish ! Check Master table excel file in %s/%s/DATA/%s_ms_tab.xlsx <br> 
+                              shiny::HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
+                              shiny::HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
+                              shiny::HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
+                              shiny::HTML(sprintf('<p>Main species (network species):<b>%s</b></p>',use_data$use_spe)),
+                              shiny::HTML(sprintf('<p>Main species (calculation dataset species):<b>%s</b></p>',use_data$cal.eset_use_spe)),
+                              shiny::HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
+                                                  use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
+                              shiny::HTML('<p>If the species/ID type is not the same between network file and calculation dataset, will use the value in network file ! </p>'),
+                              shiny::HTML(sprintf('<p>Analysis strategy:<b>%s</b></p>',use_data$DE_strategy)),
+                              shiny::HTML(sprintf('<p>Do QC plot:<b>%s</b>; Do plot for top drivers: <b>%s</b></p>',use_data$doQC,use_data$doPLOT)),
+                              shiny::HTML(sprintf('<p style=\'color:red;\'>Finish ! Check Master table excel file in %s/%s/DATA/%s_ms_tab.xlsx <br> 
                                     RData file in %s/%s/DATA/analysis.par.Step.ms-tab.RData</p>',
-                                    project_main_dir,project_name,project_name,project_main_dir,project_name)),
-                       shiny::HTML('<p>Please click the Refresh button to start another analysis!</p>')))
+                                                  project_main_dir,project_name,project_name,project_main_dir,project_name)),
+                              shiny::HTML('<p>Please click the Refresh button to start another analysis!</p>')))
       }
     }else{ ## need to download file because of pre-set output directory
-        return(shiny::tagList(h4('Result message:'),
-                       shiny::HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
-                       shiny::HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
-                       shiny::HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
-                       shiny::HTML(sprintf('<p>Main species (network species):<b>%s</b></p>',use_data$use_spe)),
-                       shiny::HTML(sprintf('<p>Main species (calculation dataset species):<b>%s</b></p>',use_data$cal.eset_use_spe)),
-                       shiny::HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
-                                           use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
-                       shiny::HTML('<p>If the species/ID type is not the same between network file and calculation dataset, will use the value in network file ! </p>'),
-                       shiny::p('Finish, click the button to download the zipped result file'),
-                       shiny::downloadButton(outputId="DownloadRData", label="Download Result Zip File"),shiny::hr(),
-                       shiny::HTML('<p>Please click the Refresh button to start another analysis!</p>')))
+      return(shiny::tagList(h4('Result message:'),
+                            shiny::HTML(sprintf('<p>Project main directory:<b>%s</b></p>',project_main_dir)),
+                            shiny::HTML(sprintf('<p>Project name:<b>%s</b></p>',project_name)),
+                            shiny::HTML(sprintf('<p>The case group name :<b>%s</b>;The control group name :<b>%s</b>; The comparison name:<b>%s</b></p>',use_data$G1_name,use_data$G0_name,use_data$comp_name)),
+                            shiny::HTML(sprintf('<p>Main species (network species):<b>%s</b></p>',use_data$use_spe)),
+                            shiny::HTML(sprintf('<p>Main species (calculation dataset species):<b>%s</b></p>',use_data$cal.eset_use_spe)),
+                            shiny::HTML(sprintf('<p>The ID level is at <b>%s</b>; <br>The main ID type for the network files:<b>%s</b>; <br>The main ID type for the calculate eset:<b>%s</b></p>',
+                                                use_data$use_level,use_data$main_id_type,use_data$cal.eset_main_id_type)),
+                            shiny::HTML('<p>If the species/ID type is not the same between network file and calculation dataset, will use the value in network file ! </p>'),
+                            shiny::p('Finish, click the button to download the zipped result file'),
+                            shiny::downloadButton(outputId="DownloadRData", label="Download Result Zip File"),shiny::hr(),
+                            shiny::HTML('<p>Please click the Refresh button to start another analysis!</p>')))
     }
   })
   output$DownloadRData <- shiny::downloadHandler(
