@@ -54,10 +54,11 @@ Here, the goal is to **find potential drivers in Group4 compared to other subtyp
 
 ---------
 
-Start the app:
+Start the app by directly call the function, or we could choose to input the path for the RData file by set the parameter in the function. If no option for `load_data_path` was set, the demo dataset will be automatically loaded when opening the application.   
 
 ```r
-NetBIDshiny.run4viewer()
+NetBIDshiny.viewer()
+# NetBIDshiny.viewer(load_data_path = system.file('demo1','driver/DATA/analysis.par.Step.ms-tab.RData',package = "NetBID2"))
 ```
 
 ## Introduction to User Interface of NetBIDshiny
@@ -227,19 +228,25 @@ Users can choose which one driver to draw the GSEA plot.
 
 ## Q & A: How to share results with others by deploying the application by having pre-generated result RData dataset ?
 
-There is one option for running `NetBIDshiny.run4viewer()`. 
+Option I: Users could call the function for deploying the shiny application.There are two options for running `NetBIDshiny.viewer()`. 
 
--- **search_path**, path for master table Rdata searching in the app server. User could choose from: 'Current Directory','Home','R Installation','Available Volumes', and could put user-defined server path (better use absolute path). Default is c('Current Directory','Home'). If set to NULL, only 'Current Directory' will be used.
+-- **load_data_path**, path for master table Rdata file in the app server. If set, the RData file will be automatically loaded when open the server. 
 
-If user want to deploy the application with pre-generated result RData files, he could run the application like this (below is the screenshot for the data directory for our online version, the code is slightly different to the code in the package and we use the original code for deploying. ):
+```r
+NetBIDshiny.viewer(load_data_path = system.file('demo1','driver/DATA/analysis.par.Step.ms-tab.RData',package = "NetBID2"))
+```
+
+-- **search_path**, path for master table Rdata searching in the app server. User could choose from: 'Current Directory','Home','R Installation','Available Volumes', and could put user-defined server path (better use absolute path). Default is c('Current Directory','Home'). If set to NULL, only 'Current Directory' will be used. Put the directory as option to run the application:
+
+```r
+NetBIDshiny.viewer(search_path='data/project_RData/')
+```
+
+Option II: Users could copy the `server.R` and `ui.R` from the `inst/app_viewer/` directory in NetBIDshiny R package. Modify the code about path settings from line22 in `server.R` and organize the directories as follows (below is the screenshot for the data directory for our online version): 
 
 ![f14](f14.png)
 
-And put the output directory as option to run the application:
-
-```r
-NetBIDshiny.run4viewer(search_path='data/project_RData/')
-```
+Then, users could deploy the servers by using RStudio `Publish Application` tools. 
 
 -------
 

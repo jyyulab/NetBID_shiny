@@ -145,7 +145,7 @@ In order to avoid condition that user forget to upload network files, we have pr
 
 ## Q & A: How to deploy the application by having pre-generated network files or calculation dataset ?
 
-There are three options for running `NetBIDshiny.runner()`. 
+Option I: Users could call the function for deploying the shiny application. There are three options for running `NetBIDshiny.runner()`. 
 
 -- **search_network_path**: path for network data searching in the application server. User could choose from: 'Current Directory','Home','R Installation','Available Volumes', and could put user-defined server path (better use absolute path). Default is c('Current Directory','Home'). If set to NULL, only 'Current Directory' will be used.
 
@@ -153,11 +153,7 @@ There are three options for running `NetBIDshiny.runner()`.
 
 -- **project_main_dir**: absolute path of the main working directory for driver analysis. If NULL, the server will add a new button for user to select the output directory. Default is NULL. If not NULL, there will be an additional link in the result page for downloading the zip file containing all information.
 
-If user want to deploy the application with pre-generated network files, he could run the application like this (below is the screenshot for the data directory for our online version, the code is slightly different to the code in the package and we use the original code for deploying):
-
-![f11](f11.png)
-
-And put the output directory as options to run the application:
+Put the directories as options to run the application:
 
 ```r
 NetBIDshiny.runner(search_network_path='data/network_txt',
@@ -165,7 +161,11 @@ NetBIDshiny.runner(search_network_path='data/network_txt',
                   project_main_dir='MR_result/')
 ```
 
-Thus, user could only select files under the defined directories. 
+Option II: Users could copy the `server.R` and `ui.R` from the `inst/app_runner/` directory in NetBIDshiny R package. Modify the code about path settings from line22-25 in `server.R` and organize the directories as follows (below is the screenshot for the data directory for our online version): 
+
+![f11](f11.png)
+
+Then, users could deploy the servers by using RStudio `Publish Application` tools. 
 
 ------
 
