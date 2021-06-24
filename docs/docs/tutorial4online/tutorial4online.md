@@ -22,7 +22,7 @@ The public online version of NetBIDshiny can be found here [NetBIDshiny_runner](
 
 ----------
 
-## NetBIDshiny_forMR: pre-generated network files and demo usage
+## NetBIDshiny_runner: pre-generated network files and demo usage
 
 ### GTEx
 
@@ -34,7 +34,7 @@ The public online version of NetBIDshiny can be found here [NetBIDshiny_runner](
 
 - The original gene expression profile could be obtained from [GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_reads.gct.gz](https://storage.googleapis.com/gtex_analysis_v8/rna_seq_data/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_reads.gct.gz)
 
-- Detailed network QC files could be found in [GTEx_network](docs/tutorial4online/GTEx_network)
+- Detailed network QC files could be found in [GTEx_network](tutorial4online/GTEx_network)
 
 ### TARGET
 
@@ -42,7 +42,7 @@ The public online version of NetBIDshiny can be found here [NetBIDshiny_runner](
 
 - We have pre-generated 102 networks from 51 cell lines with each cell line has one TF network and one SIG network.
 
-- Detailed network QC files could be found in [TARGET_network](docs/tutorial4online/TARGET_network)
+- Detailed network QC files could be found in [TARGET_network](tutorial4online/TARGET_network)
 
 
 ### TCGA
@@ -51,10 +51,10 @@ The public online version of NetBIDshiny can be found here [NetBIDshiny_runner](
 
 - We have pre-generated 92 networks from 46 tumor types with each has one TF network and one SIG network.
 
-- Detailed network QC files could be found in [TCGA_network](docs/tutorial4online/TCGA_network)
+- Detailed network QC files could be found in [TCGA_network](tutorial4online/TCGA_network)
 
 
-## NetBIDshiny_forVis: demo datasets and usage
+## NetBIDshiny_viewer: demo datasets and usage
 
 Two demo datasets are available at the online version.
 
