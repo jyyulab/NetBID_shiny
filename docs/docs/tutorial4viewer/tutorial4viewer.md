@@ -19,6 +19,8 @@ These subgroups together with their sample numbers are, 3 SHH, 4 WNT, and 6 Grou
 Group4 tumors in adult have significantly worse progression-free and overall survival, compared to other molecular subtypes of tumor.
 Here, the goal is to **find potential drivers in Group4 compared to other subtypes using NetBID2**. This may relate to specific clinical feature of Group4 MB subtype.
 
+For the tutorial of the online server [NetBIDshiny_viewer](https://yulab-stjude.shinyapps.io/NetBID2_Viewer/), users could check [tutorial4online](tutorial4online).
+
 ----------
 ## Quick Navigation
 
