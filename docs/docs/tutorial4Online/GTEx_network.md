@@ -1,5 +1,5 @@
 ---
-title: "QC information for networks generated for GTEx database"
+title: "- QC information for networks generated for GTEx database"
 layout: default
 nav_order: 4
 permalink: /docs/tutorial4online/GTEx_network

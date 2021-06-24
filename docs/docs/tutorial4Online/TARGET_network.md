@@ -1,5 +1,5 @@
 ---
-title: "QC information for networks generated for TARGET database"
+title: "- QC information for networks generated for TARGET database"
 layout: default
 nav_order: 5
 permalink: /docs/tutorial4online/TARGET_network

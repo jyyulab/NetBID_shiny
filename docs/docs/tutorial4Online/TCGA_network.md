@@ -1,5 +1,5 @@
 ---
-title: "QC information for networks generated for TCGA database"
+title: "- QC information for networks generated for TCGA database"
 layout: default
 nav_order: 6
 permalink: /docs/tutorial4online/TCGA_network

@@ -1,23 +1,23 @@
 ---
 title: "FAQ"
 layout: default
-nav_order: 4
+nav_order: 7
 permalink: /docs/FAQ
 ---
 
 ## Tutorial for Hidden driver (master regulator) estimation
 
-- [Q & A: How to prepare eSet class object RData file ?](../docs/tutorial4MR#q--a-how-to-prepare-eset-class-object-rdata-file-)
+- [Q & A: How to prepare eSet class object RData file ?](../docs/tutorial4runner#q--a-how-to-prepare-eset-class-object-rdata-file-)
 
-- [Q & A: How to use self-defined network files ?](../docs/tutorial4MR#q--a-how-to-use-self-defined-network-files-)
+- [Q & A: How to use self-defined network files ?](../docs/tutorial4runner#q--a-how-to-use-self-defined-network-files-)
 
-- [Q & A: How to use if only has TF network without SIG network ?](../docs/tutorial4MR#q--a-how-to-use-if-only-has-tf-network-without-sig-network-)
+- [Q & A: How to use if only has TF network without SIG network ?](../docs/tutorial4runner#q--a-how-to-use-if-only-has-tf-network-without-sig-network-)
 
-- [Q & A: How to deploy the application by having pre-generated network files or calculation dataset ?](../docs/tutorial4MR#q--a-how-to-deploy-the-application-by-having-pre-generated-network-files-or-calculation-dataset-)
+- [Q & A: How to deploy the application by having pre-generated network files or calculation dataset ?](../docs/tutorial4runner#q--a-how-to-deploy-the-application-by-having-pre-generated-network-files-or-calculation-dataset-)
 
 ## Tutorial for Visualization
 
-- [Q & A: How to share results with others by deploying the application by having pre-generated result RData dataset ?](../docs/tutorial4Vis#q--a-how-to-share-results-with-others-by-deploying-the-application-by-having-pre-generated-result-rdata-dataset-)
+- [Q & A: How to share results with others by deploying the application by having pre-generated result RData dataset ?](../docs/tutorial4runner#q--a-how-to-share-results-with-others-by-deploying-the-application-by-having-pre-generated-result-rdata-dataset-)
 
 ## Other FAQ
 
@@ -50,7 +50,7 @@ search_network_path <- 'data/network_txt/' ## need to modify
 search_eSet_path <- 'data/eSet_RData/' ## need to modify
 pre_project_main_dir <- 'MR_result/' ## need to modify
 options(shiny.maxRequestSize = 1000*1024^2) ## set size for uploading files
-appDir <- system.file('app_4MR/',package = "NetBIDshiny") ## the directory for server.R and ui.R
+appDir <- system.file('app_4runner/',package = "NetBIDshiny") ## the directory for server.R and ui.R
 rsconnect::deployApp(appDir=appDir,appName='NetBIDshiny_forMR',server = 'shinyapps.io')
 ```
 
@@ -59,7 +59,7 @@ Deploy the second application for result visualization:
 ```r
 search_path <- 'data/project_RData' ## need to modify
 options(shiny.maxRequestSize = 1000*1024^2) ## set size for uploading files
-appDir <- system.file('app_4Vis/',package = "NetBIDshiny") ## the directory for server.R and ui.R
+appDir <- system.file('app_4runner/',package = "NetBIDshiny") ## the directory for server.R and ui.R
 rsconnect::deployApp(appDir=appDir,appName='NetBIDshiny_forVis1',server = 'shinyapps.io')
 ```
 
