@@ -21,8 +21,8 @@ loadjs<- function() {
                 functions = c("shinyjs.refresh"))
 }
 
-#' @title \code{NetBIDshiny.run4Vis} is a function to run a shiny app for NetBID2 result visualization.
-#' @description \code{NetBIDshiny.run4Vis} is a shiny app for NetBID2 result visualization. 
+#' @title \code{NetBIDshiny.viewer} is a function to run a shiny app for NetBID2 result visualization.
+#' @description \code{NetBIDshiny.viewer} is a shiny app for NetBID2 result visualization. 
 #' User could follow the online tutorial \url{https://jyyulab.github.io/NetBID_shiny/} for usage. 
 #'
 #' @param load_data_path character, path for the pre-loaded data. If NULL, will pre-load the demo dataset.
@@ -32,7 +32,7 @@ loadjs<- function() {
 #' Default is c('Current Directory','Home').
 #' If set to NULL, only 'Current Directory' will be used.
 #' @export
-NetBIDshiny.run4Vis <- function(load_data_path=NULL,
+NetBIDshiny.viewer <- function(load_data_path=NULL,
                                 search_path=c('Current Directory','Home')
                                ){
   options(shiny.maxRequestSize = 1000*1024^2)
@@ -45,8 +45,8 @@ NetBIDshiny.run4Vis <- function(load_data_path=NULL,
   shiny::shinyApp(ui = ui_Vis, server = server_Vis,onStart=loadjs)
 }
 
-#' @title \code{NetBIDshiny.run4MR} is a function to run a shiny app for NetBID2 master regulator identification.
-#' @description \code{NetBIDshiny.run4MR} is a shiny app for NetBID2 master regulator 
+#' @title \code{NetBIDshiny.runner} is a function to run a shiny app for NetBID2 hidden driver identification.
+#' @description \code{NetBIDshiny.runner} is a shiny app for NetBID2 hidden driver 
 #' identification and the generation of figures for top drivers with the help of two lazy functions in NetBID2,
 #' NetBID.lazyMode.DriverEstimation() and NetBID.lazyMode.DriverVisualization(). 
 #' User could follow the online tutorial \url{https://jyyulab.github.io/NetBID_shiny/} for usage. 
@@ -65,7 +65,7 @@ NetBIDshiny.run4Vis <- function(load_data_path=NULL,
 #' If NULL, the server will add a new button for user to select the output directory. Default is NULL.
 #' If not NULL, there will be an additional link in the result page for downloading the zip file containing all information.
 #' @export
-NetBIDshiny.run4MR <- function(search_network_path=c('Current Directory','Home'),
+NetBIDshiny.runner <- function(search_network_path=c('Current Directory','Home'),
                                search_eSet_path=c('Current Directory','Home'),
                                project_main_dir=NULL){
   options(shiny.maxRequestSize = 1000*1024^2)
