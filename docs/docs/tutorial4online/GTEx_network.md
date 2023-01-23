@@ -39,7 +39,7 @@ permalink: /docs/tutorial4online/GTEx_network
 |[Liver](GTEx_network_QC/LivernetQC.html)| 251 |1840|8353|19655|685787
 |[Lung](GTEx_network_QC/LungnetQC.html)| 867 |1895|8559|22000|674020
 |[Minor_Salivary_Gland](GTEx_network_QC/Minor_Salivary_GlandnetQC.html)| 181 |1894|8522|21241|706291
-|[Muscle_Skeletal](GTEx_network_QC/Muscle_SkeletalnetQC.html)| 1,132 |1871|8253|18880|455219
+|[Muscle_Skeletal](GTEx_network_QC/Muscle_SkeletalnetQC.html)| 1132 |1871|8253|18880|455219
 |[Nerve_Tibial](GTEx_network_QC/Nerve_TibialnetQC.html)| 722 |1897|8561|22805|716865
 |[Ovary](GTEx_network_QC/OvarynetQC.html)| 195 |1892|8503|22360|987284
 |[Pancreas](GTEx_network_QC/PancreasnetQC.html)| 360 |1859|8316|18124|465621
@@ -54,4 +54,4 @@ permalink: /docs/tutorial4online/GTEx_network
 |[Thyroid](GTEx_network_QC/ThyroidnetQC.html)| 812 |1902|8544|22642|739934
 |[Uterus](GTEx_network_QC/UterusnetQC.html)| 166 |1889|8512|22088|924647
 |[Vagina](GTEx_network_QC/VaginanetQC.html)| 173 |1897|8548|21583|707535
-|[Whole_Blood](GTEx_network_QC/Whole_BloodnetQC.html)| 3,288 |1773|7869|17011|307150
+|[Whole_Blood](GTEx_network_QC/Whole_BloodnetQC.html)| 3288 |1773|7869|17011|307150

@@ -6,10 +6,10 @@ permalink: /docs/tutorial4online/TCGA_network
 ---
 | Network File prefix                                                             | Sample Size | No. of hubs (TF) | No. of hubs (SIG) | No. of total genes | No. of edges |
 |---------------------------------------------------------------------------------|-------------|------------------|-------------------|--------------------|--------------|
-|[ACC.T_33753_15879_77](TCGA_network_QC/ACC.T_33753_15879_77netQC.html)||1634|6049|15879|2678153
+|[ACC.T_33753_15879_77](TCGA_network_QC/ACC.T_33753_15879_77netQC.html)|77|1634|6049|15879|2678153
 |[BLCA.T_34890_16552_348](TCGA_network_QC/BLCA.T_34890_16552_348netQC.html)| 348 |1654|6152|16420|1153515
 |[BRCA.N_35169_16784_109](TCGA_network_QC/BRCA.N_35169_16784_109netQC.html)| 109 |1650|6231|16768|1410937
-|[BRCA.T_35306_16556_1058](TCGA_network_QC/BRCA.T_35306_16556_1058netQC.html)| 1,058 |1654|6110|16090|701060
+|[BRCA.T_35306_16556_1058](TCGA_network_QC/BRCA.T_35306_16556_1058netQC.html)| 1058 |1654|6110|16090|701060
 |[CESC.T_34635_16448_241](TCGA_network_QC/CESC.T_34635_16448_241netQC.html)| 241 |1651|6130|16398|1495925
 |[CHOL.T_34535_16625_35](TCGA_network_QC/CHOL.T_34535_16625_35netQC.html)| 35 |1642|6113|16473|595519
 |[COADREAD.N_34500_16548_50](TCGA_network_QC/COADREAD.N_34500_16548_50netQC.html)| 50 |1638|6174|16502|965465
