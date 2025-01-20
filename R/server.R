@@ -295,7 +295,7 @@ server_Vis <- function(input, output,session) {
   },rownames=FALSE,extensions = c('FixedColumns',"FixedHeader"),
   options = list(
     scrollX = TRUE,fixedColumns=list(leftColumns=4),
-    columnDefs = list(list(className = 'dt-center')),
+    columnDefs = list(list(targets = "_all", className = 'dt-center')), # 20250120
     filter='top',
     pageLength = 5)
   )
